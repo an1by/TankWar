@@ -5,4 +5,4 @@ Server - NodeJS (JavaScript)
 Client - Python
 
 TO DO:
-1. Папка для головы (Head), дуни (Arduino), Сервера (Server), Клиента (Client)
+1. Папка для головы (Head), дуни (Arduino), Сервера (Server), Клиента (Client), Дизайн (Design).
