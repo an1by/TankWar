@@ -17,7 +17,12 @@ let pos_blue = []
 const server = net.createServer(socket => {
     const address = createAddress(socket);
     Logger.info('Подключено устройство с IP: ' + address);
-    socket.write('1', 'utf-8')
+    // socket.write('1', 'utf-8')
+    for (let i = 0; i < 6; i++) {
+        const t = new Tank(i+1, i >= 3 ? "blue" : "red", undefined)
+        t.position.x = i;
+        t.position.y = i;
+    }
     socket.on('data', received => {
         let data = JSON.parse(received.toString());
         switch (data["command"]) {
@@ -94,46 +99,16 @@ const server = net.createServer(socket => {
                 tank.position.y = position.y;
                 break
             }
-            case "reload": {
-                if (!getClient(address))
-                    return;
-                const number = data["number"]
-                const tank = getTankByAddress(number);
-                if (!tank) {
-                    Logger.error(`Танк с адресом ${address} не найден!`)
-                    return;
-                }
-                tank.reload()
-                Logger.info(`Танк №${tank.number} перезарядился.`)
-                break
-            }
-            case "aim": { // От клиента
-                if (!getClient(address))
-                    return;
-                const number = data["number"],
-                    target_position = createPosition(data[2]);
-                const tank = getTank(number);
-                if (!target_position || !tank) {
-                    Logger.error(`При атаке со стороны танка №${number} произошла ошибка!`)
-                    return;
-                }
-                const result = tank.aim(target_position)
-                if (result)
-                    Logger.info(`Производим прицеливание для танка №${number}. Координаты: ${target_position.x}:${target_position.y}`);
-                else {
-                    Logger.error(`Танк №${number} попытался прицелиться. Танк не заряжен!`)
-                }
-                // Танк принимает команду, поворачивает башню, производится звук выстрела, танк отправляет команду fire_bt серверу
-                break
-            }
             case "fire": { // От танка
-                const tank = getTankByAddress(address);
+                const tank = getTank(data["number"]);
+                const target_position = data["position"]
                 if (!tank) {
-                    Logger.error(`Танк с адресом ${address} не найден!`)
+                    Logger.error(`Танк с номером ${data["number"]} не найден!`)
                     return;
                 }
-                const result = tank.fire()
-                Logger.info(`Танк №${tank.number} выстрелил! ${result}`)
+                const result = tank.fire(target_position)
+                Logger.info(`Танк №${tank.number} выстрелил! ${result.message}`)
+                socket.write(JSON.stringify(result)) // Feedback
                 break
             }
         }
