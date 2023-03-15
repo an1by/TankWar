@@ -36,7 +36,7 @@ class Tank {
     fire(target_position) {
         const target = getTankByPosition(target_position)
         if (!target) {
-            this.socket.write('miss')
+            // this.socket.write('miss')
             return {
                 "object": "none",
                 "message": `(Не найдена цель, выстрел в пустоту)`
@@ -47,18 +47,19 @@ class Tank {
             let x = this.position.x + i;
             let y = this.position.y + i / multiplier;
             if (isObstacle({x: x, y: y})) {
-                this.socket.write('miss')
+                // this.socket.write('miss')
                 return {
                     "object": "obstacle",
                     "message": `(Пуля попала в препятствие)`
                 }
             }
         }
-        this.socket.write('target_killed')
+        // this.socket.write('target_killed')
         target.dead = true;
-        target.socket.write('dead');
+        // target.socket.write('dead');
         return {
             "object": "tank",
+            "tank_position": target.position,
             "message": `(Уничтожен танк №${target.number})`
         }
     }
