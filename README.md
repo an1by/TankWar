@@ -11,7 +11,7 @@
 Язык программирования - ??\
 Соединяет все Arduino на поле, отправляет им требуемые команды и получает фидбек от микроконтроллеров.
 
-[**ObjectilesInitializer**](./ObjectilesInitializer)\
+[**ObstaclesManager**](./ObstaclesManager)\
 Язык программирования - Python.\
 Используется для ручного внесения препятствий на поле.
 
@@ -25,5 +25,5 @@
 >2. Связь Head <-> Server
 >3. Механику Head
 >4. Связь Arduino-Head
->5. Механику ObjectilesInitializer
->6. Связь ObjectilesInitializer <-> Server
+>5. Механику ObstaclesManager
+>6. Связь ObstaclesManager <-> Server
