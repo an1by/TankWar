@@ -1,11 +1,29 @@
 # TankWar
-Arduino - написан на C++
+[**Arduino**](./Arduino)\
+Язык программирования - C++\
+Располагается на Arduino Nano с модулем ESP.
 
-Head - ???
+[**Client**](./Client)\
+Язык программирования - Python.\
+Позволяет отправлять требуемые запросы действий серверу.
 
-Server - NodeJS (JavaScript)
+[**Head**](./Head)\
+Язык программирования - ??\
+Соединяет все Arduino на поле, отправляет им требуемые команды и получает фидбек от микроконтроллеров.
 
-Client - Python
+[**ObjectilesInitializer**](./ObjectilesInitializer)\
+Язык программирования - Python.\
+Используется для ручного внесения препятствий на поле.
 
-TO DO:
-1. Папка для головы (Head), дуни (Arduino), Сервера (Server), Клиента (Client), Дизайн (Design).
+[**Server**](./Server)\
+Язык программирования - NodeJS.\
+Располагается на удаленном сервере. Требуется для обработки запросов и связи клиентов.
+
+>**TO DO:**
+>1. Связь Client <-> Server\
+>1.1. Сделать ответвление Client'а для эмуляции ИИ 
+>2. Связь Head <-> Server
+>3. Механику Head
+>4. Связь Arduino-Head
+>5. Механику ObjectilesInitializer
+>6. Связь ObjectilesInitializer <-> Server
