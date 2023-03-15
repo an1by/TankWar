@@ -10,8 +10,6 @@ class Tank {
         for (let tank of tank_list) {
             if (tank.number === number) {
                 this.position = tank.position
-                this.charged = tank.charged
-                this.target = tank.target
                 this.dead = tank.dead
                 return this;
             }
@@ -21,37 +19,22 @@ class Tank {
             y: 0,
             angle: 0
         }
-        this.charged = true
-        this.target = {} // Target Position
         this.dead = false
         tank_list.push(this)
         return this;
     }
     disconnect() {
+        if (!this.socket)
+            return true
         this.socket.write('disconnect', 'utf-8');
         this.socket = undefined
-        return false
+        return true
     }
     address() {
         createAddress(this.socket)
     }
-    reload() {
-        if (this.charged)
-            return false;
-        this.charged = true;
-        this.socket.write('reload', 'utf-8')
-        return true;
-    }
-    aim(target_position) {
-        if (!this.charged)
-            return false;
-        this.socket.write('aim:' + target_position.angle);
-        this.target = target_position
-        return true;
-    }
-    fire() {
-        this.charged = false;
-        const target = getTankByPosition(this.target)
+    fire(target_position) {
+        const target = getTankByPosition(target_position)
         if (!target) {
             this.socket.write('miss')
             return `(Не найдена цель, выстрел в пустоту)`;
