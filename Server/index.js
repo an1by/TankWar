@@ -62,8 +62,8 @@ const server = net.createServer(socket => {
                         break
                     }
                     case "obstacle": {
-                        if (raspberry.address !== address)
-                            return;
+                        // if (raspberry.address !== address)
+                        //     return;
                         const positions = data["positions"];
                         if (!positions[0] || !positions[1])
                             return;
@@ -78,8 +78,8 @@ const server = net.createServer(socket => {
                 break
             }
             case "move": {
-                if (address !== raspberry.address)
-                    return;
+                // if (address !== raspberry.address)
+                //     return;
                 const number = data["number"],
                     position = data["position"]
                 let tank = getTank(number);
