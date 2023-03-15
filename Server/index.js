@@ -17,7 +17,7 @@ let pos_blue = []
 const server = net.createServer(socket => {
     const address = createAddress(socket);
     Logger.info('Подключено устройство с IP: ' + address);
-    // socket.write('1', 'utf-8')
+    socket.write('Вы подключены к серверу!', 'utf-8')
     for (let i = 0; i < 6; i++) {
         const t = new Tank(i+1, i >= 3 ? "blue" : "red", undefined)
         t.position.x = i;
@@ -108,7 +108,7 @@ const server = net.createServer(socket => {
                 }
                 const result = tank.fire(target_position)
                 Logger.info(`Танк №${tank.number} выстрелил! ${result.message}`)
-                socket.write(JSON.stringify(result)) // Feedback
+                socket.write(JSON.stringify(result), 'utf-8') // Feedback
                 break
             }
         }
