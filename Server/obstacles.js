@@ -16,7 +16,7 @@ class Obstacle {
     }
 }
 
-function isObstacle(position) {
+function getObstacle(position) {
     for (let obstacle of obstacle_list) {
         if (obstacle.position[0].x <= position.x <= obstacle.position[1].x && obstacle.position[0].y <= position.y <= obstacle.position[1].y)
             return obstacle;
@@ -25,5 +25,5 @@ function isObstacle(position) {
 }
 
 module.exports = {
-    Obstacle, obstacle_list, isObstacle
+    Obstacle, obstacle_list, getObstacle
 }

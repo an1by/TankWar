@@ -1,5 +1,5 @@
 const {createAddress} = require("./utils");
-const {isObstacle} = require("./obstacles");
+const {getObstacle} = require("./obstacles");
 let tank_list = []
 
 class Tank {
@@ -38,7 +38,9 @@ class Tank {
         if (!target) {
             // this.socket.write('miss')
             return {
-                "object": "none",
+                "object": {
+                    "name": "none"
+                },
                 "message": `(Не найдена цель, выстрел в пустоту)`
             }
         }
@@ -46,10 +48,14 @@ class Tank {
         for (let i = 0; i <= target.position.x; i += 0.1) {
             let x = this.position.x + i;
             let y = this.position.y + i / multiplier;
-            if (isObstacle({x: x, y: y})) {
+            const obstacle = getObstacle({x: x, y: y})
+            if (obstacle) {
                 // this.socket.write('miss')
                 return {
-                    "object": "obstacle",
+                    "object": {
+                        "name": "obstacle",
+                        "position": obstacle.position
+                    },
                     "message": `(Пуля попала в препятствие)`
                 }
             }
@@ -58,8 +64,11 @@ class Tank {
         target.dead = true;
         // target.socket.write('dead');
         return {
-            "object": "tank",
-            "tank_position": target.position,
+            "object": {
+                "name": "tank",
+                "number": target.number,
+                "position": target.position
+            },
             "message": `(Уничтожен танк №${target.number})`
         }
     }
