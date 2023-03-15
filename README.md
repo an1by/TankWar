@@ -1,7 +1,10 @@
 # TankWar
 Arduino - написан на C++
+
 Head - ???
+
 Server - NodeJS (JavaScript)
+
 Client - Python
 
 TO DO:
