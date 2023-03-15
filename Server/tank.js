@@ -37,7 +37,10 @@ class Tank {
         const target = getTankByPosition(target_position)
         if (!target) {
             this.socket.write('miss')
-            return `(Не найдена цель, выстрел в пустоту)`;
+            return {
+                "object": "none",
+                "message": `(Не найдена цель, выстрел в пустоту)`
+            }
         }
         const multiplier = target.position.x / target.position.y;
         for (let i = 0; i <= target.position.x; i += 0.1) {
@@ -45,13 +48,19 @@ class Tank {
             let y = this.position.y + i / multiplier;
             if (isObstacle({x: x, y: y})) {
                 this.socket.write('miss')
-                return `(Пуля попала в препятствие)`;
+                return {
+                    "object": "obstacle",
+                    "message": `(Пуля попала в препятствие)`
+                }
             }
         }
         this.socket.write('target_killed')
         target.dead = true;
         target.socket.write('dead');
-        return `(Уничтожен танк №${target.number})`
+        return {
+            "object": "tank",
+            "message": `(Уничтожен танк №${target.number})`
+        }
     }
 }
 
