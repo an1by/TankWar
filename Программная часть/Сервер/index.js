@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-require('./http_server.js')
+// require('./http_server.js')
 
 const net = require('net');
 const Logger = require("./logger.js");
@@ -17,7 +17,7 @@ let pos_blue = []
 const server = net.createServer(socket => {
     const address = createAddress(socket);
     Logger.info('Подключено устройство с IP: ' + address);
-    socket.write('Вы подключены к серверу!', 'utf-8')
+    socket.write(JSON.stringify({"action": "log_console", "message": "Вы подключены к серверу!"}), 'utf-8')
     for (let i = 0; i < 6; i++) {
         const t = new Tank(i+1, i >= 3 ? "blue" : "red", undefined)
         t.position.x = i;
@@ -26,6 +26,9 @@ const server = net.createServer(socket => {
     socket.on('data', received => {
         let data = JSON.parse(received.toString());
         switch (data["command"]) {
+            case "log": {
+                console.log(data["message"])
+            }
             case "set_pos": {
                 pos_red = data["red"]
                 pos_blue = data["blue"]
@@ -108,7 +111,7 @@ const server = net.createServer(socket => {
                 }
                 const result = tank.fire(target_position)
                 Logger.info(`Танк №${tank.number} выстрелил! ${result.message}`)
-                socket.write(JSON.stringify(result), 'utf-8') // Feedback
+                socket.write(JSON.stringify(result), 'utf-8') // fire_feedback
                 break
             }
         }

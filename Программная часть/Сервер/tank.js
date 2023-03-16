@@ -38,6 +38,7 @@ class Tank {
         if (!target) {
             // this.socket.write('miss')
             return {
+                "action": "fire_feedback",
                 "object": {
                     "name": "none"
                 },
@@ -52,6 +53,7 @@ class Tank {
             if (obstacle) {
                 // this.socket.write('miss')
                 return {
+                    "action": "fire_feedback",
                     "object": {
                         "name": "obstacle",
                         "position": obstacle.position
@@ -64,6 +66,7 @@ class Tank {
         target.dead = true;
         // target.socket.write('dead');
         return {
+            "action": "fire_feedback",
             "object": {
                 "name": "tank",
                 "number": target.number,

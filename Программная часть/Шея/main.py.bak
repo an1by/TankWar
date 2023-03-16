@@ -29,20 +29,25 @@ boxSprite.rect = box.get_rect()
 ### Настраиваем шрифт ###
 font1 = pygame.font.SysFont('calibri', 36)
 
+grid1 = pygame.Rect((0, 0, 64, 64))
 fakeScreen = screen.copy()
 testSurface = pygame.Surface((512, 512))
 
 screenScrollX = 0
 screenScrollY = 0
 
-for i in range(0,8):
-    alph = [0,2,4,6] if i%2==0 else [1,3,5,7]
-    for j in alph:
+for i in range(1,9):
+    for j in [1,3,5,7]:
         boxSprite = pygame.sprite.Sprite()
         boxSprite.image = box
         boxSprite.rect = box.get_rect()
-        boxSprite.rect.x = i*64
-        boxSprite.rect.y = j*64
+        print(pygame.mouse.get_pos())
+        
+        pos = j if i % 2 == 1 else j+1
+        
+        boxSprite.rect.x = pos*64    #изменения тут
+        boxSprite.rect.y = pos*64    #и тут
+        print(boxSprite.rect.x,boxSprite.rect.y)
         allSprites.add(boxSprite)
 
 def mainMenu():
@@ -52,7 +57,7 @@ def mainMenu():
 
         screen.fill((0, 0, 0))
 
-        # posX, posY = pygame.mouse.get_pos()
+        posX, posY = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -60,11 +65,32 @@ def mainMenu():
                 sys.exit()
             elif event.type == pygame.KEYUP:
                 motion = "stop"
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if grid1.collidepoint(event.pos):
+                        boxSprite = pygame.sprite.Sprite()
+                        boxSprite.image = box
+                        boxSprite.rect = box.get_rect()
+                        boxSprite.rect.x = 0
+                        boxSprite.rect.y = 0
+                        allSprites.add(boxSprite)
+                    else:
+                        boxSprite = pygame.sprite.Sprite()
+                        boxSprite.image = box
+                        boxSprite.rect = box.get_rect()
+                        print(pygame.mouse.get_pos())
+                        boxSprite.rect.x = (posX//64)*64    #изменения тут
+                        boxSprite.rect.y = (posY//64)*64    #и тут
+                        print(boxSprite.rect.x,boxSprite.rect.y)
+                        allSprites.add(boxSprite)
 
         # screen.blit(player, (0,0))
         fakeScreen.blit(ground512, (0, 0))
         allSprites.update()
         allSprites.draw(fakeScreen)
+        text2 = font1.render(str(int(clock.get_fps())), False,
+                             (255, 255, 255))
+        fakeScreen.blit(text2, (0, 0))
         screen.blit(pygame.transform.scale(fakeScreen, (512, 512)), (screenScrollX, screenScrollY))
         pygame.display.flip()
 
