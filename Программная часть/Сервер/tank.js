@@ -1,11 +1,10 @@
-const {createAddress} = require("./utils");
 const {getObstacle} = require("./obstacles");
 let tank_list = []
 
 class Tank {
     constructor(number, team, socket) {
+        this.client = new Client(socket, "tank")
         this.number = number
-        this.socket = socket
         this.team = team
         for (let tank of tank_list) {
             if (tank.number === number) {
@@ -24,14 +23,10 @@ class Tank {
         return this;
     }
     disconnect() {
-        if (!this.socket)
+        if (!this.client)
             return true
-        this.socket.write('disconnect', 'utf-8');
-        this.socket = undefined
+        this.client.disconnect();
         return true
-    }
-    address() {
-        createAddress(this.socket)
     }
     fire(target_position) {
         const target = getTankByPosition(target_position)
@@ -87,7 +82,7 @@ function getTank(number) {
 
 function getTankByAddress(address) {
     for (let tank of tank_list) {
-        if (tank.address() === address)
+        if (tank.client.address === address)
             return tank
     }
     return undefined

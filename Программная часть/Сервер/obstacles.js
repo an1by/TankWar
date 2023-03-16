@@ -1,8 +1,9 @@
 let obstacle_list = []
 
 class Obstacle {
-    constructor(first_position, second_position) {
+    constructor(type, first_position, second_position) {
         this.position = [first_position, second_position]
+        this.type = type
         obstacle_list.push(this)
     }
     delete() {

@@ -7,24 +7,28 @@ const Logger = require("./logger.js");
 const {createAddress, createPosition} = require("./utils");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank");
 let {isObstacle, Obstacle, obstacle_list} = require("./obstacles");
-const {Client, client_list, getClient} = require("./client")
+const {Client, client_list, getClient, getWithType} = require("./client")
 
 let raspberry = undefined;
 
 let pos_red = []
 let pos_blue = []
 
+for (let i = 0; i < 6; i++) {
+    const t = new Tank(i+1, i >= 3 ? "blue" : "red", undefined)
+    t.position.x = i;
+    t.position.y = i;
+}
+
 const server = net.createServer(socket => {
     const address = createAddress(socket);
+
     Logger.info('Подключено устройство с IP: ' + address);
-    socket.write(JSON.stringify({"action": "log_console", "message": "Вы подключены к серверу!"}), 'utf-8')
-    for (let i = 0; i < 6; i++) {
-        const t = new Tank(i+1, i >= 3 ? "blue" : "red", undefined)
-        t.position.x = i;
-        t.position.y = i;
-    }
+    socket.write(JSON.stringify({"action": "log_console", "message": "Вы подключены к серверу!"}), 'utf-8');
+
     socket.on('data', received => {
         let data = JSON.parse(received.toString());
+        // console.log(received.toString())
         switch (data["command"]) {
             case "log": {
                 console.log(data["message"])
@@ -46,27 +50,40 @@ const server = net.createServer(socket => {
                 break
             }
             case "clear": {
-                raspberry = undefined;
-                tank_list.forEach(tank => tank.disconnect())
-                tank_list = []
-                obstacle_list = []
-                client_list.forEach(client => client.disconnect())
-                Logger.success('Данные очищены, клиенты отключены!')
-                break
+                switch (data["what"]) {
+                    case "all":
+                        raspberry = undefined;
+                        tank_list.forEach(tank => tank.disconnect())
+                        tank_list = []
+                        obstacle_list = []
+                        client_list.forEach(client => client.disconnect())
+                        Logger.success('Данные очищены, клиенты отключены!')
+                        break
+                    case "obstacles":
+                        obstacle_list = []
+                        break
+                }
+            }
+            case "merge": {
+                switch (data["what"]) {
+                    case "obstacles": {
+                        obstacle_list = []
+                        data["list"].forEach(obs => {
+                            const positions = obs["positions"]
+                            if (positions[0] && positions[1] && obs[type])
+                                new Obstacle(obs[type], positions[0], positions[1]);
+                        });
+                    }
+                }
             }
             case "init": {
                 switch (data["who"]) {
                     case "tank": {
+                        if (getWithType("tank").length >= 6)
+                            return
                         const number = data["number"];
-                        new Tank(number, socket);
+                        new Tank(number, (number < 3 ? "red" : "blue"), socket);
                         Logger.success(`Танк №${number} инициализирован. Адрес: ` + address)
-                        break
-                    }
-                    case "raspberry": {
-                        if (!raspberry) {
-                            raspberry = socket
-                            Logger.success(`Raspberry Pi инициализирована. Адрес: ` + address)
-                        }
                         break
                     }
                     case "obstacle": {
@@ -78,8 +95,11 @@ const server = net.createServer(socket => {
                         new Obstacle(positions[0], positions[1]);
                         break
                     }
-                    case "client": {
-                        new Client(socket)
+                    default: {
+                        if (!getWithType(data["who"])) {
+                            new Client(socket, data["who"])
+                            Logger.success(`Клиент ${data["who"]} инициализирован. Адрес: ` + address)
+                        }
                         break
                     }
                 }
@@ -119,15 +139,6 @@ const server = net.createServer(socket => {
 
     socket.on('end', () => {
         Logger.info('Устройство отключено. IP: ' + address)
-        // if (raspberry && address === raspberry.address) {
-        //     raspberry = {}
-        //     return
-        // }
-        // let tank = getTankByAddress(address);
-        // if (tank) {
-        //     tank.delete()
-        //     return;
-        // }
     });
 });
 
