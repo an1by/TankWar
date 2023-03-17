@@ -4,9 +4,9 @@ require('dotenv').config()
 
 const net = require('net');
 const Logger = require("./logger.js");
-const {createAddress, createPosition} = require("./utils");
+const {createAddress, createPosition, arrayToPosition} = require("./utils");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank");
-let {isObstacle, Obstacle, obstacle_list} = require("./obstacles");
+let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles");
 const {Client, client_list, getClient, getWithType} = require("./client")
 
 let raspberry = undefined;
@@ -64,14 +64,23 @@ const server = net.createServer(socket => {
                         break
                 }
             }
-            case "merge": {
+            case "edit": {
                 switch (data["what"]) {
                     case "obstacles": {
-                        obstacle_list = []
                         data["list"].forEach(obs => {
                             const positions = obs["positions"]
-                            if (positions[0] && positions[1] && obs[type])
-                                new Obstacle(obs[type], positions[0], positions[1]);
+                            const state = obs["state"]
+                            if (positions[0] && positions[1] && obs["state"]) {
+                                let obstacle = getObstacleWithArray(positions);
+
+                                if (obstacle) {
+                                    if (state == "empty")
+                                        obstacle.delete();
+                                    else 
+                                        obstacle.state = state;
+                                }
+                                else new Obstacle(obs[type], positions[0], positions[1]);
+                            }
                         });
                     }
                 }

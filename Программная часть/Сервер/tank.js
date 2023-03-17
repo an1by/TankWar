@@ -1,4 +1,5 @@
 const {getObstacle} = require("./obstacles");
+const {Client} = require("./client")
 let tank_list = []
 
 class Tank {
