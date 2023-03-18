@@ -1,0 +1,8 @@
+# Скрипт для автоматической загрузки и запуска Backend-части на удаленном сервере.
+rm -rf TWServer
+gh repo clone an1by/TankWar
+mv 'TankWar/Программная часть/Сервер/' TWServer/
+rm -rf ./TankWar
+cd ./TWServer
+npm i
+node .
