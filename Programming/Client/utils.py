@@ -5,11 +5,8 @@ from pygame_widgets import *
 from ping3 import ping, verbose_ping
 
 def ping_server(server):
-    pong = None
-    while pong == None:
-        pong = ping(server)
-        time.sleep(1000)
-    return str(round(pong * 1000)) + " мс"
+    pong = ping(server)
+    return str(round(pong * 1000)) + " мс" if pong else "0 мс"
 
 servers = [
     {

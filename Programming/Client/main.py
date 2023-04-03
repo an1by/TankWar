@@ -138,13 +138,23 @@ def main():
         if timer < 60:
             timer += 1
         else:
+            print(3)
             received = tcpip.get_data()
-            if received['action'] == "step_feedback":
-                current_step = None if received['step'] == "none" else received['step']
-                time = received['time']
+            if received and received["action"]:
+                match (received['action']):
+                    case "step_feedback":
+                        current_step = None if received['step'] == "none" else received['step']
+                        time = received['time']
+                    case "init":
+                        team = received["team"]
+                        if team == "red":
+                            teamcolor = (255,0,0)
+                            enemycolor = (0,0,255)
+                        else:
+                            teamcolor = (0,0,255)
+                            enemycolor = (255,0,0)
             timer = 0
             #updateField()
-        print(timer)
         
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -214,13 +224,7 @@ def main():
                             case "ФСБ":
                                 not_avalaible["text"] = "СОБР уже выехал, ожидайте под вашими окнами."
                             case _:
-                                team = tcpip.init()["team"]
-                                if team == "red":
-                                    teamcolor = (255,0,0)
-                                    enemycolor = (0,0,255)
-                                else:
-                                    teamcolor = (0,0,255)
-                                    enemycolor = (255,0,0)
+                                tcpip.init()
                                 game_status = "game"
                 # if settings_button.draw(main_canvas):
                 #     game_status = "game"

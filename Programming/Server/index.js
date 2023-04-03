@@ -118,7 +118,7 @@ const server = net.createServer(async (socket) => {
                             if (client_list.length < 2) {
                                 let client = new Client(socket, data["who"])
                                 Logger.success(`Клиент ${data["who"]} инициализирован. Адрес: ` + address)
-                                client.send_data({"team": client_list.length == 1 ? "red" : "blue"})
+                                client.send_data({"action": "init", "team": client_list.length == 1 ? "red" : "blue"})
                                 if (client_list.length == 2) {
                                     controller.start_game()
                                 }
