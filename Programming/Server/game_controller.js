@@ -5,7 +5,7 @@ let step_timer = 30
 function start_game() {
     step_timer = 30
     for (let i = 0; i < client_list.length; i++) {
-        client = client_list[i]
+        let client = client_list[i]
         client.step = (i == 0)
         client.send_data({
             "action": "step_feedback",

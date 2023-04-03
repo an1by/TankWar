@@ -177,12 +177,13 @@ def main():
                 # Применение игрового канваса
                 screen.blit(game_canvas, (sb_w, sb_h))
                 allSprites.draw(game_canvas)
-                # match(current_step):
-                    # case False:
-                        # pygame.draw.circle(screen, enemycolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
-                        # utils.draw_text(screen, str(timer) + "c" , (0,0,0))
-                    # case True:
-                        # pygame.draw.circle(screen, enemycolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
+                match(current_step):
+                    case False:
+                        pygame.draw.circle(screen, enemycolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
+                        utils.draw_text(screen, str(timer) + "c" , enemycolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
+                    case True:
+                        pygame.draw.circle(screen, teamcolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
+                        utils.draw_text(screen, str(timer) + "c" , teamcolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
             case "server_select":
                 screen.blit(main_canvas, (0, 0))
                 main_canvas.fill((37, 250, 73))
@@ -213,13 +214,13 @@ def main():
                             case "ФСБ":
                                 not_avalaible["text"] = "СОБР уже выехал, ожидайте под вашими окнами."
                             case _:
-                                # team = tcpip.init()["team"]
-                                # if team == "red":
-                                #     teamcolor = (255,0,0)
-                                #     enemycolor = (0,0,255)
-                                # else:
-                                #     teamcolor = (0,0,255)
-                                #     enemycolor = (255,0,0)
+                                team = tcpip.init()["team"]
+                                if team == "red":
+                                    teamcolor = (255,0,0)
+                                    enemycolor = (0,0,255)
+                                else:
+                                    teamcolor = (0,0,255)
+                                    enemycolor = (255,0,0)
                                 game_status = "game"
                 # if settings_button.draw(main_canvas):
                 #     game_status = "game"

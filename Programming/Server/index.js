@@ -11,8 +11,6 @@ const {Client, client_list, getClient, getWithType} = require("./client")
 
 const controller = require("./game_controller")
 
-require()
-
 let raspberry = undefined;
 
 let pos_red = []
@@ -118,8 +116,9 @@ const server = net.createServer(async (socket) => {
                         }
                         case "client": {
                             if (client_list.length < 2) {
-                                new Client(socket, data["who"])
+                                let client = new Client(socket, data["who"])
                                 Logger.success(`Клиент ${data["who"]} инициализирован. Адрес: ` + address)
+                                client.send_data({"team": client_list.length == 1 ? "red" : "blue"})
                                 if (client_list.length == 2) {
                                     controller.start_game()
                                 }
