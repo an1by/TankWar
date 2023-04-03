@@ -9,6 +9,10 @@ let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require(".
 let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles");
 const {Client, client_list, getClient, getWithType} = require("./client")
 
+const controller = require("./game_controller")
+
+require()
+
 let raspberry = undefined;
 
 let pos_red = []
@@ -20,19 +24,20 @@ for (let i = 0; i < 6; i++) {
     t.position.y = i;
 }
 
-const server = net.createServer(socket => {
+const server = net.createServer(async (socket) => {
     const address = createAddress(socket);
 
     Logger.info('Подключено устройство с IP: ' + address);
     try {
         socket.write(JSON.stringify({"action": "log_console", "message": "Вы подключены к серверу!"}), 'utf-8');
     } catch (e) {
-        console.error(e)
+        //
     }
 
-    socket.on('data', received => {
+    socket.on('data', async (received) => {
         try {
-            let data = JSON.parse(received.toString());
+            let recv = received.toString();
+            let data = JSON.parse(recv);
             // console.log(received.toString())
             switch (data["command"]) {
                 case "log": {
@@ -44,10 +49,10 @@ const server = net.createServer(socket => {
                     break
                 }
                 case "get": {
-                    socket.write(JSON.stringify({
-                        "red": pos_red,
-                        "blue": pos_blue
-                    }), 'utf-8')
+                    switch (data["what"]) {
+                        case "obstacles":
+                            return obstacle_list
+                    }
                     break
                 }
                 case "debug": {
@@ -68,6 +73,7 @@ const server = net.createServer(socket => {
                             obstacle_list = []
                             break
                     }
+                    break
                 }
                 case "edit": {
                     switch (data["what"]) {
@@ -89,6 +95,7 @@ const server = net.createServer(socket => {
                             });
                         }
                     }
+                    break
                 }
                 case "init": {
                     switch (data["who"]) {
@@ -103,54 +110,60 @@ const server = net.createServer(socket => {
                         case "obstacle": {
                             // if (raspberry.address !== address)
                             //     return;
-                            const positions = data["positions"];
+                            const positions = data["positions"];                                
                             if (!positions[0] || !positions[1])
                                 return;
                             new Obstacle(positions[0], positions[1]);
                             break
                         }
-                        default: {
-                            if (!getWithType(data["who"])) {
+                        case "client": {
+                            if (client_list.length < 2) {
                                 new Client(socket, data["who"])
                                 Logger.success(`Клиент ${data["who"]} инициализирован. Адрес: ` + address)
+                                if (client_list.length == 2) {
+                                    controller.start_game()
+                                }
                             }
                             break
                         }
                     }
                     break
                 }
-                case "move": {
-                    // if (address !== raspberry.address)
-                    //     return;
-                    const number = data["number"],
-                        position = data["position"]
-                    let tank = getTank(number);
-                    if (!tank)
-                        return;
-                    if (position.x < 0 || position.y < 0) {
-                        tank.disconnect();
-                        Logger.warning(`Танк №${number} вышел за поле! Отключен.`)
-                        return;
+                case "step": {
+                    switch (data["what"]) {
+                        case "move": {
+                            // if (address !== raspberry.address)
+                            //     return;
+                            const number = data["number"],
+                                position = data["position"]
+                            let tank = getTank(number);
+                            if (!tank)
+                                return;
+                            if (position.x < 0 || position.y < 0) {
+                                tank.disconnect();
+                                Logger.warning(`Танк №${number} вышел за поле! Отключен.`)
+                                return;
+                            }
+                            tank.move(position)
+                            break
+                        }
+                        case "fire": { // От танка
+                            const tank = getTank(data["number"]);
+                            const target_position = data["position"]
+                            if (!tank) {
+                                Logger.error(`Танк с номером ${data["number"]} не найден!`)
+                                return;
+                            }
+                            const result = tank.fire(target_position)
+                            Logger.info(`Танк №${tank.number} выстрелил! ${result.message}`)
+                            socket.write(JSON.stringify(result), 'utf-8') // fire_feedback
+                            break
+                        }
                     }
-                    tank.position.x = position.x;
-                    tank.position.y = position.y;
-                    break
-                }
-                case "fire": { // От танка
-                    const tank = getTank(data["number"]);
-                    const target_position = data["position"]
-                    if (!tank) {
-                        Logger.error(`Танк с номером ${data["number"]} не найден!`)
-                        return;
-                    }
-                    const result = tank.fire(target_position)
-                    Logger.info(`Танк №${tank.number} выстрелил! ${result.message}`)
-                    socket.write(JSON.stringify(result), 'utf-8') // fire_feedback
-                    break
                 }
             }
         } catch (e) {
-            console.error(e)
+            Logger.error('Ошибка выполнения кода: ' + e.message)
         }
     });
 

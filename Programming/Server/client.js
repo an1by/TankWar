@@ -6,6 +6,7 @@ class Client {
         this.socket = socket
         this.type = type
         this.address = createAddress(this.socket)
+        this.step = true // true / false
         client_list.push(this)
     }
     disconnect() {
@@ -19,7 +20,7 @@ class Client {
         }
     }
     send_data(data) {
-        this.socket.write(JSON.stringify(data))
+        this.socket.write(JSON.stringify(data), 'utf-8')
     }
 }
 

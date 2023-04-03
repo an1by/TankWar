@@ -5,8 +5,8 @@ let tank_list = []
 class Tank {
     constructor(number, team, socket) {
         this.client = new Client(socket, "tank")
-        this.number = number
         this.team = team
+        this.number = number
         for (let tank of tank_list) {
             if (tank.number === number) {
                 this.position = tank.position
@@ -22,6 +22,10 @@ class Tank {
         this.dead = false
         tank_list.push(this)
         return this;
+    }
+    move(position) {
+        this.position.x = position.x
+        this.position.y = position.y
     }
     disconnect() {
         if (!this.client)
