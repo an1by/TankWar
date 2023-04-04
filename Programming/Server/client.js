@@ -42,12 +42,7 @@ function getClient(address) {
 }
 
 function countClientType(type) {
-    let amount = 0
-    for (let client in client_list) {
-        if (client.type == type)
-            amount += 1
-    }
-    return amount
+    return getWithType(type).length
 }
 
 module.exports = {
