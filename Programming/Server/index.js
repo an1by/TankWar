@@ -115,6 +115,7 @@ const server = net.createServer(async (socket) => {
                             break
                         }
                         case "client": {
+
                             if (client_list.length < 2) {
                                 let client = new Client(socket, data["who"])
                                 Logger.success(`Клиент ${data["who"]} инициализирован. Адрес: ` + address)
@@ -167,6 +168,12 @@ const server = net.createServer(async (socket) => {
     });
 
     socket.on('end', () => {
+        for (let instance of [getClient(address), getTank(address)]) {
+            if (instance) {
+                instance.disconnect()
+                break
+            }
+        }
         Logger.info('Устройство отключено. IP: ' + address)
     });
 });
