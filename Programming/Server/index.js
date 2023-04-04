@@ -7,7 +7,7 @@ const Logger = require("./logger.js");
 const {createAddress, createPosition, arrayToPosition} = require("./utils");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank");
 let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles");
-const {Client, client_list, getClient, getWithType} = require("./client")
+const {Client, client_list, getClient, getWithType, countClientType} = require("./client")
 
 const controller = require("./game_controller")
 
@@ -36,7 +36,7 @@ const server = net.createServer(async (socket) => {
         try {
             let recv = received.toString();
             let data = JSON.parse(recv);
-            // console.log(received.toString())
+            console.log(received.toString())
             switch (data["command"]) {
                 case "log": {
                     console.log(data["message"])
@@ -115,12 +115,13 @@ const server = net.createServer(async (socket) => {
                             break
                         }
                         case "client": {
-
-                            if (client_list.length < 2) {
+                            let counter = countClientType("client")
+                            if (counter < 2) {
                                 let client = new Client(socket, data["who"])
                                 Logger.success(`Клиент ${data["who"]} инициализирован. Адрес: ` + address)
                                 client.send_data({"action": "init", "team": client_list.length == 1 ? "red" : "blue"})
-                                if (client_list.length == 2) {
+                                counter += 1
+                                if (counter == 2) {
                                     controller.start_game()
                                 }
                             }

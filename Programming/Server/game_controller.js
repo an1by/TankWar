@@ -13,6 +13,7 @@ function start_game() {
             "step": client.step
         })
     }
+    Logger.success('Игра успешно запущена!')
 }
 
 function end_game() {
