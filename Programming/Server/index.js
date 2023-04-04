@@ -118,10 +118,10 @@ const server = net.createServer(async (socket) => {
                             let counter = countClientType("client")
                             if (counter < 2) {
                                 let client = new Client(socket, data["who"])
-                                Logger.success(`Клиент ${data["who"]} инициализирован. Адрес: ` + address)
+                                Logger.success(`Клиент №${counter+1} ${data["who"]} инициализирован. Адрес: ` + address)
                                 client.send_data({"action": "init", "team": client_list.length == 1 ? "red" : "blue"})
-                                counter += 1
-                                if (counter == 2) {
+                                if (counter + 1 == 2) {
+                                    console.log('da')
                                     controller.start_game()
                                 }
                             }

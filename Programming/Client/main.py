@@ -138,9 +138,9 @@ def main():
         if timer < 60:
             timer += 1
         else:
-            print(3)
             received = tcpip.get_data()
             if received and received["action"]:
+                print(received)
                 match (received['action']):
                     case "step_feedback":
                         current_step = None if received['step'] == "none" else received['step']
