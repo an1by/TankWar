@@ -9,7 +9,7 @@ let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require(".
 let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles");
 const {Client, client_list, getClient, getWithType, countClientType} = require("./client")
 
-const controller = require("./game_controller")
+const {start_game} = require("./game_controller")
 
 let raspberry = undefined;
 
@@ -116,16 +116,14 @@ const server = net.createServer(async (socket) => {
                         }
                         case "client": {
                             let counter = countClientType("client")
-                            console.log(counter)
                             if (counter < 2) {
                                 let client = new Client(socket, data["who"])
                                 counter += 1
-                                console.log(counter)
-                                Logger.success(`Клиент №${counter+1} ${data["who"]} инициализирован. Адрес: ` + address)
-                                client.send_data({"action": "init", "team": counter == 1 ? "red" : "blue"})
+                                Logger.success(`${data["who"]} №${counter} инициализирован. Адрес: ` + address)
+                                client.send_data({"action": "init", "team": counter == 1 ? "blue" : "red"})
                                 if (counter == 2) {
                                     console.log('da')
-                                    controller.start_game()
+                                    start_game()
                                 }
                             }
                             break

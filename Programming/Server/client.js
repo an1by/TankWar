@@ -26,7 +26,7 @@ class Client {
 
 function getWithType(type) {
     let array = []
-    for (let client in client_list) {
+    for (let client of client_list) {
         if (client.type === type)
             array.push(client)
     }
@@ -34,7 +34,7 @@ function getWithType(type) {
 }
 
 function getClient(address) {
-    for (let client in client_list) {
+    for (let client of client_list) {
         if (client.address === address)
             return client;
     }
@@ -42,7 +42,13 @@ function getClient(address) {
 }
 
 function countClientType(type) {
-    return getWithType(type).length
+    let amount = 0
+    for (let client of client_list) {
+        console.log(client)
+        if (client.type === type)
+            amount += 1
+    }
+    return amount;
 }
 
 module.exports = {

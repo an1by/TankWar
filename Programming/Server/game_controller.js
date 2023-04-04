@@ -1,4 +1,4 @@
-const {Client, client_list, getClient, getWithType} = require("./client")
+const {client_list} = require("./client")
 
 let step_timer = 30
 
