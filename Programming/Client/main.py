@@ -3,9 +3,6 @@ from pygame.locals import *
 from pygame_widgets import *
 import os
 import sys
-import tcpip
-import button
-import utils
 
 ### Инциализация PyGame ###
 pygame.init()
@@ -15,14 +12,23 @@ clock = pygame.time.Clock()
 allSprites = pygame.sprite.Group()
 display_info = pygame.display.Info()
 
+### Инициализация моих импортов ###
+import tcpip
+import button
+import utils
+
 ### Основной экран ###
-screen_size = (0,0)
+screen_size = (
+    display_info.current_w,
+    display_info.current_h
+)
+scren_coeff = 1080 / display_info.current_h
 screen = pygame.display.set_mode(screen_size, FULLSCREEN)
 
 ### Constants ###
 cells = {
-    "size": 108,
-    "sub_size": 108,
+    "size": 86,
+    "sub_size": 86,
     "amount": 8
 }
 cell_size = cells["size"] * cells["amount"]
@@ -142,6 +148,7 @@ def main():
                 if received and received["action"]:
                     match (received['action']):
                         case "step_feedback":
+                            print(received["step"])
                             current_step = None if received['step'] == "none" else received['step']
                             step_time = received['time']
                         case "init":
@@ -160,14 +167,18 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                print(current_step)
                 if event.button == 1 and current_step == True:
                     margin_w = razdiscell[0]
                     margin_h = cells["size"] * 0.5
                     posX, posY = pygame.mouse.get_pos()
+                    # print(posX, posY)
                     posX -= margin_w
                     posY -= margin_h
+                    # print(posX, posY)
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
                         position = [int(posX // cells["size"]), int(posY // cells["size"])] # 0, 1, 2, 3, 4, 5, 6, 7
+                        print('da')
                         print(position[0], position[1])
                         
                     pass

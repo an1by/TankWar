@@ -1,6 +1,7 @@
 import pygame
 from utils import draw_text, ping_server
 
+display_info = pygame.display.Info()
 #button class
 class Button():
 	def __init__(self, x, y, image, scale):

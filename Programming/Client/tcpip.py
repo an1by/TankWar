@@ -9,16 +9,20 @@ def send_data(data):
     s.sendall(bytes(json.dumps(data) ,encoding="utf-8"))
 
 def get_data():
-    received = None
+    to_return = []
     ready = select.select([s], [], [], 0.1)
     if ready[0] and s.getsockname()[1] != 0:
         received = s.recv(2**20)
-    # Smart split
-    r = re.split('(\{.*?\})(?= *\{)', received)
-    print(r)
-    da = [json.loads(received) for x in r if not is_empty(x)]
-    print(da)
-    return da
+        if received:
+            received = received.decode('utf-8')
+            print(received)
+            r = re.split('(\{.*?\})(?= *\{)', received)
+            print(r)
+            # for x in r:
+            #     if '{' in r and '}' in r:
+            #         to_return.append(x)
+            to_return = [json.loads(x) for x in r if not is_empty(x)]
+    return to_return
 
 def connect(address, port):
     s.connect((address, port))
