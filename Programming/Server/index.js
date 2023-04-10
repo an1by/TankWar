@@ -4,17 +4,13 @@ require('dotenv').config()
 
 const net = require('net');
 const Logger = require("./logger.js");
-const {createAddress, createPosition, arrayToPosition} = require("./utils");
-let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank");
-let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles");
-const {Client, client_list, getClient, getWithType, countClientType} = require("./client")
-
-const {start_game} = require("./game_controller")
+const {createAddress, createPosition, arrayToPosition} = require("./utils.js");
+let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
+let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles.js");
+let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
+let {start_game} = require("./game_controller.js")
 
 let raspberry = undefined;
-
-let pos_red = []
-let pos_blue = []
 
 for (let i = 0; i < 6; i++) {
     const t = new Tank(i+1, i >= 3 ? "blue" : "red", undefined)
@@ -36,25 +32,17 @@ const server = net.createServer(async (socket) => {
         try {
             let recv = received.toString();
             let data = JSON.parse(recv);
-            console.log(received.toString())
             switch (data["command"]) {
                 case "log": {
                     console.log(data["message"])
-                }
-                case "set_pos": {
-                    pos_red = data["red"]
-                    pos_blue = data["blue"]
-                    break
                 }
                 case "get": {
                     switch (data["what"]) {
                         case "obstacles":
                             return obstacle_list
+                        case "tanks":
+                            return tank_list
                     }
-                    break
-                }
-                case "debug": {
-                    console.log(data["message"])
                     break
                 }
                 case "clear": {
@@ -122,8 +110,7 @@ const server = net.createServer(async (socket) => {
                                 Logger.success(`${data["who"]} №${counter} инициализирован. Адрес: ` + address)
                                 client.send_data({"action": "init", "team": counter == 1 ? "blue" : "red"})
                                 if (counter == 2) {
-                                    console.log('da')
-                                    start_game()
+                                    await start_game()
                                 }
                             }
                             break
@@ -168,6 +155,12 @@ const server = net.createServer(async (socket) => {
             Logger.error('Ошибка выполнения кода: ' + e.message)
         }
     });
+
+    socket.on('error', function(ex) {
+        // console.log(ex)
+        // ignore
+    });
+      
 
     socket.on('end', () => {
         for (let instance of [getClient(address), getTank(address)]) {

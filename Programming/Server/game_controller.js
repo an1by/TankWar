@@ -1,29 +1,25 @@
-const {client_list} = require("./client")
+const {getWithType} = require("./client")
+const Logger = require("./logger.js");
 
 let step_timer = 30
 
-function start_game() {
+async function start_game() {
     step_timer = 30
-    for (let i = 0; i < client_list.length; i++) {
-        let client = client_list[i]
-        client.step = (i == 0)
-        client.send_data({
-            "action": "step_feedback",
-            "time": step_timer,
-            "step": client.step
-        })
+    await start_timer()
+    for (let client of getWithType("client")) {
+        client.step = (client.team == "red")
     }
     Logger.success('Игра успешно запущена!')
 }
 
 function end_game() {
-    client_list.forEach((client) => {
+    for (let client of getWithType("client")) {
         client.step = "none"
-    })
+    }
 }
 
 function send_time(change_step) {
-    client_list.forEach((client) => {
+    for (let client of getWithType("client")) {
         if (change_step)
             client.step = client.step == "none" ? "none" : !client.step
         client.send_data({
@@ -31,21 +27,21 @@ function send_time(change_step) {
             "time": step_timer,
             "step": client.step
         })
-    })
+    }
 }
 
 async function start_timer() {
     setInterval(() => {
-        if (timer > 0) {
-            timer -= 1
+        if (step_timer > 0) {
+            step_timer -= 1
             send_time(false)
         } else {
-            timer = 30
+            step_timer = 30
             send_time(true)
         }
     }, 1000)
 }
 
-module.exprots = {
+module.exports = {
     start_timer, start_game, end_game
 }

@@ -1,3 +1,4 @@
+const Logger = require("./logger");
 const {createAddress} = require("./utils");
 let client_list = []
 
@@ -12,15 +13,19 @@ class Client {
     disconnect() {
         for (let i = 0; i < client_list.length; i++) {
             let client = client_list[i]
-            if (client.address === this.address) {
-                if (client.socket)
-                    client.socket.write(JSON.stringify({"command": "disconnect"}))
+            if (client && client.address === this.address) {
+                if (client.socket && !client.socket.destroyed)
+                    try {
+                        client.socket.write(JSON.stringify({"command": "disconnect"}))
+                    } catch (exception) {
+                        Logger.warning(`Клиент ${this.address} отключен произвольно!`)
+                    }
                 client_list.splice(i, 1);
             }
         }
     }
     send_data(data) {
-        this.socket.write(JSON.stringify(data), 'utf-8')
+        this.socket.write(JSON.stringify(data), 'utf-8');
     }
 }
 
@@ -44,7 +49,6 @@ function getClient(address) {
 function countClientType(type) {
     let amount = 0
     for (let client of client_list) {
-        console.log(client)
         if (client.type === type)
             amount += 1
     }

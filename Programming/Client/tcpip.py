@@ -1,11 +1,8 @@
 import socket, json, time, select
+import re
+from utils import is_empty
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(("play.aniby.net", 3030)) # Подключаемся к нашему серверу. #Получаем данные из сокета.
-time.sleep(3)
-s.recv(2**14)
-
-s.setblocking(0)
 
 # data: json
 def send_data(data):
@@ -14,9 +11,22 @@ def send_data(data):
 def get_data():
     received = None
     ready = select.select([s], [], [], 0.1)
-    if ready[0]:
+    if ready[0] and s.getsockname()[1] != 0:
         received = s.recv(2**20)
-    return (json.loads(received) if received else {})
+    # Smart split
+    r = re.split('(\{.*?\})(?= *\{)', received)
+    print(r)
+    da = [json.loads(received) for x in r if not is_empty(x)]
+    print(da)
+    return da
+
+def connect(address, port):
+    s.connect((address, port))
+    print(f'Connected to {address}:{port}')
+    s.setblocking(0)
+
+def connect_default():
+    connect('play.aniby.net', 3030)
 
 def init():
     send_data({"command":"init", "who": "client"})

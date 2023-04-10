@@ -117,7 +117,6 @@ def updateField():
     tcpip.send_data({"command"})
 
 def main():
-    print('da')
     global game_status
     global servers_buttons
     current_step = None # True: step / False: waiting / None: waiting in game start
@@ -127,6 +126,7 @@ def main():
     }
     timer = 0
     team = None
+    step_time = 30
     current_cell = [-1, -1]
     received = None
     while True:
@@ -135,24 +135,23 @@ def main():
         if not_avalaible["timer"] > 0:
             not_avalaible["timer"] -= 1
         
-        if timer < 60:
+        if timer < 10:
             timer += 1
         else:
-            received = tcpip.get_data()
-            if received and received["action"]:
-                print(received)
-                match (received['action']):
-                    case "step_feedback":
-                        current_step = None if received['step'] == "none" else received['step']
-                        time = received['time']
-                    case "init":
-                        team = received["team"]
-                        if team == "red":
-                            teamcolor = (255,0,0)
-                            enemycolor = (0,0,255)
-                        else:
-                            teamcolor = (0,0,255)
-                            enemycolor = (255,0,0)
+            for received in tcpip.get_data():
+                if received and received["action"]:
+                    match (received['action']):
+                        case "step_feedback":
+                            current_step = None if received['step'] == "none" else received['step']
+                            step_time = received['time']
+                        case "init":
+                            team = received["team"]
+                            if team == "red":
+                                teamcolor = (255,0,0)
+                                enemycolor = (0,0,255)
+                            else:
+                                teamcolor = (0,0,255)
+                                enemycolor = (255,0,0)
             timer = 0
             #updateField()
         
@@ -161,14 +160,15 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+                if event.button == 1 and current_step == True:
                     margin_w = razdiscell[0]
                     margin_h = cells["size"] * 0.5
                     posX, posY = pygame.mouse.get_pos()
                     posX -= margin_w
                     posY -= margin_h
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
-                        current_cell = [posX // cells["size"], posY // cells["size"]] # 0, 1, 2, 3, 4, 5, 6, 7
+                        position = [int(posX // cells["size"]), int(posY // cells["size"])] # 0, 1, 2, 3, 4, 5, 6, 7
+                        print(position[0], position[1])
                         
                     pass
                     # ЛКМ
@@ -190,10 +190,10 @@ def main():
                 match(current_step):
                     case False:
                         pygame.draw.circle(screen, enemycolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
-                        utils.draw_text(screen, str(timer) + "c" , enemycolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
+                        utils.draw_text(screen, str(step_time) + "c" , enemycolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
                     case True:
                         pygame.draw.circle(screen, teamcolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
-                        utils.draw_text(screen, str(timer) + "c" , teamcolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
+                        utils.draw_text(screen, str(step_time) + "c" , teamcolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
             case "server_select":
                 screen.blit(main_canvas, (0, 0))
                 main_canvas.fill((37, 250, 73))
@@ -224,6 +224,7 @@ def main():
                             case "ФСБ":
                                 not_avalaible["text"] = "СОБР уже выехал, ожидайте под вашими окнами."
                             case _:
+                                tcpip.connect_default()
                                 tcpip.init()
                                 game_status = "game"
                 # if settings_button.draw(main_canvas):

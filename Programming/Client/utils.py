@@ -11,7 +11,8 @@ def ping_server(server):
 servers = [
     {
         "name": "Aniby.NET",
-        "address": "play.aniby.net"
+        "address": "play.aniby.net",
+        "port": 3030
     },
     {
         "name": "СССР",
@@ -38,3 +39,6 @@ def draw_text(surface, text, text_color, x, y):
     global font
     img = font.render(str(text), True, text_color)
     surface.blit(img, (x,y))
+
+def is_empty(data):
+    return data == {} or data == None or data == ''
