@@ -8,6 +8,7 @@ class Client {
         this.type = type
         this.address = createAddress(this.socket)
         this.step = true // true / false
+        this.team = undefined
         client_list.push(this)
     }
     disconnect() {
