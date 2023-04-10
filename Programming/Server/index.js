@@ -107,6 +107,7 @@ const server = net.createServer(async (socket) => {
                             if (counter < 2) {
                                 let client = new Client(socket, data["who"])
                                 Logger.success(`${data["who"]} №${counter} инициализирован. Адрес: ` + address)
+                                counter += 1
                                 team = (counter === 1 ? "blue" : "red")
                                 client.team = team
                                 client.send_data({"action": "init", "team": team})
