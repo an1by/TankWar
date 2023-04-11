@@ -42,3 +42,20 @@ def draw_text(surface, text, text_color, x, y):
 
 def is_empty(data):
     return data == {} or data == None or data == ''
+
+def load_resource(name):
+    return pygame.image.load(os.path.join('resources', name)).convert_alpha()
+
+
+class CoordinatesObject(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.angle = 0
+        self.center = None
+    
+    def set_center(self, x, y):
+        self.center = CoordinatesObject(x, y)
+    
+    def to_tuple(self):
+        return (self.x, self.y)

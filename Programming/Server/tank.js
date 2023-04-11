@@ -101,6 +101,19 @@ function getTankByPosition(position) {
     );
 }
 
+function getTanks() {
+    let tanks = []
+    for (let tank of tank_list) {
+        tanks.push({
+            team: tank.team,
+            number: tank.number,
+            position: tank.position,
+            dead: tank.dead
+        })
+    }
+    return tanks
+}
+
 module.exports = {
-    Tank, tank_list, getTank, getTankByAddress, getTankByPosition
+    Tank, tank_list, getTank, getTankByAddress, getTankByPosition, getTanks
 }

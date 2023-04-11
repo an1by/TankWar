@@ -28,6 +28,18 @@ const server = net.createServer(async (socket) => {
         //
     }
 
+    for (let i = 1; i <= 6; i++) {
+        let new_tank = new Tank(i, (i < 4 ? "red" : "blue"), undefined);
+        if (data["move"]) {
+            position = {
+                x: (i + 1),
+                y: (i < 4 ? 7 : 0)
+            }
+            new_tank.move(position)
+        }
+    }
+    Logger.info('Танков инициализировано: ' + tank_list.length)
+
     socket.on('data', async (received) => {
         try {
             let recv = received.toString();
@@ -89,7 +101,15 @@ const server = net.createServer(async (socket) => {
                             if (getWithType("tank").length >= 6)
                                 return
                             const number = data["number"];
-                            new Tank(number, (number < 3 ? "red" : "blue"), socket);
+                            const team = data["team"] // red/blue
+                            let new_tank = new Tank(number, team, socket);
+                            if (data["move"]) {
+                                position = {
+                                    x: data["move"]["x"],
+                                    y: data["move"]["y"]
+                                }
+                                new_tank.move(position)
+                            }
                             Logger.success(`Танк №${number} инициализирован. Адрес: ` + address)
                             break
                         }

@@ -15,12 +15,7 @@ def get_data():
         received = s.recv(2**20)
         if received:
             received = received.decode('utf-8')
-            print(received)
             r = re.split('(\{.*?\})(?= *\{)', received)
-            print(r)
-            # for x in r:
-            #     if '{' in r and '}' in r:
-            #         to_return.append(x)
             to_return = [json.loads(x) for x in r if not is_empty(x)]
     return to_return
 

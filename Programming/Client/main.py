@@ -15,7 +15,9 @@ display_info = pygame.display.Info()
 ### Инициализация моих импортов ###
 import tcpip
 import button
+from utils import CoordinatesObject
 import utils
+import tanks
 
 ### Основной экран ###
 screen_size = (
@@ -148,7 +150,6 @@ def main():
                 if received and received["action"]:
                     match (received['action']):
                         case "step_feedback":
-                            print(received["step"])
                             current_step = None if received['step'] == "none" else received['step']
                             step_time = received['time']
                         case "init":
@@ -159,6 +160,9 @@ def main():
                             else:
                                 teamcolor = (0,0,255)
                                 enemycolor = (255,0,0)
+                        case "set_tanks":
+                            margin = CoordinatesObject(razdiscell[0], cells["size"] * 0.5)
+                            tanks.setList(received["tanks"], margin, cells["size"])
             timer = 0
             #updateField()
         
@@ -167,19 +171,14 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                print(current_step)
                 if event.button == 1 and current_step == True:
                     margin_w = razdiscell[0]
                     margin_h = cells["size"] * 0.5
                     posX, posY = pygame.mouse.get_pos()
-                    # print(posX, posY)
                     posX -= margin_w
                     posY -= margin_h
-                    # print(posX, posY)
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
                         position = [int(posX // cells["size"]), int(posY // cells["size"])] # 0, 1, 2, 3, 4, 5, 6, 7
-                        print('da')
-                        print(position[0], position[1])
                         
                     pass
                     # ЛКМ
@@ -197,7 +196,11 @@ def main():
                 pygame.draw.rect(screen, (65, 65, 65), (sb_w - 20, sb_h - 20, sb_w + cell_size//2.29 , sb_h + cell_size * 0.988))
                 # Применение игрового канваса
                 screen.blit(game_canvas, (sb_w, sb_h))
+                # Отрисовка квадратов
                 allSprites.draw(game_canvas)
+                # Отрисовка танков
+                for tank in tanks.tank_list:
+                    tank.draw(game_canvas)
                 match(current_step):
                     case False:
                         pygame.draw.circle(screen, enemycolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
