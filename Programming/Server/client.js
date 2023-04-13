@@ -26,11 +26,13 @@ class Client {
         }
     }
     send_data(data) {
-        this.socket.write(JSON.stringify(data), 'utf-8');
+        if (this.socket)
+            this.socket.write(JSON.stringify(data), 'utf-8');
     }
     broadcast_data(data) {
         for (let client of client_list) {
-            client.send_data(data)
+            if (client.socket)
+                client.send_data(data)
         }
     }
 }

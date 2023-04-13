@@ -30,9 +30,16 @@ function end_game() {
 }
 
 function send_time(change_step) {
-    for (let client of getWithType("client")) {
-        if (change_step)
+    let clients = getWithType("client")
+    if (clients.length !== 2) {
+        end_game()
+        return
+    }
+    for (let client of clients) {
+        if (change_step) {
             client.step = client.step === "none" ? "none" : !client.step
+            step_timer = 30
+        }
         client.send_data({
             "action": "step_feedback",
             "time": step_timer,
@@ -56,5 +63,5 @@ async function start_timer() {
 }
 
 module.exports = {
-    start_timer, start_game, end_game
+    start_timer, start_game, end_game, send_time
 }

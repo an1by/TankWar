@@ -149,13 +149,14 @@ def main():
         else:
             for received in tcpip.get_data():
                 if received and received["action"]:
-                    print(received)
                     match (received['action']):
                         case "step_feedback":
                             current_step = None if received['step'] == "none" else received['step']
                             step_time = received['time']
                         case "init":
                             team = received["team"]
+                            if team == "blue":
+                                colors["me"], colors["enemy"] = colors["enemy"], colors["me"]
                         case "set_tanks":
                             tanks.setList(received["tanks"])
                         case "move_tank":
@@ -185,14 +186,18 @@ def main():
                         position = CoordinatesObject(int(posX // cells["size"]), int(posY // cells["size"])) # 0, 1, 2, 3, 4, 5, 6, 7
                         if not tanks.active_tank:
                             founded_tank = tanks.foundTank(position)
-                            if founded_tank.team == team:
-                                tanks.active_tank = tanks.foundTank(position)
+                            if founded_tank:
+                                print(founded_tank.number, founded_tank.team, team)
+                                print(founded_tank.team == team)
+                            if founded_tank and founded_tank.team == team:
+                                tanks.active_tank = founded_tank
                         else:
                             tanks.active_tank.move(position)
                             tcpip.send_data({
                                 "command": "step",
                                 "what": "move",
-                                "number": tanks.active_tank.number
+                                "number": tanks.active_tank.number,
+                                "position": position.to_json()
                             })
                             tanks.active_tank = None
                     
@@ -213,7 +218,6 @@ def main():
                 # Отрисовка танков
                 for tank in tanks.tank_list:
                     tank.draw(game_canvas)
-                
                 
                 if current_step != None:
                     display_pos = (display_info.current_w * 0.89, display_info.current_h * 0.83)

@@ -64,3 +64,10 @@ class CoordinatesObject(object):
     
     def to_tuple(self):
         return (self.x, self.y)
+
+    def to_json(self):
+        return {
+            "x": self.x,
+            "y": self.y,
+            "angle": self.angle
+        }

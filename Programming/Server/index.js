@@ -18,14 +18,6 @@ for (let i = 0; i < 6; i++) {
     t.position.y = i;
 }
 
-for (let i = 1; i <= 6; i++) {
-    let new_tank = new Tank(i, (i < 4 ? "red" : "blue"), undefined);
-    position = {
-        x: (i + 1),
-        y: (i < 4 ? 7 : 0)
-    }
-    new_tank.move(position)
-}
 Logger.info('Танков инициализировано: ' + tank_list.length)
 
 const server = net.createServer(async (socket) => {

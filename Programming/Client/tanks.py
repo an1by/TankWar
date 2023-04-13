@@ -7,12 +7,10 @@ def setList(new_list):
     tank_list = []
     for tank in new_list:
         newt = Tank(tank["team"], tank["number"], tank["dead"])
-        print(tank["position"])
         coords = CoordinatesObject(
             tank["position"]["x"], 
             tank["position"]["y"]
         )
-        print(coords.to_tuple())
         newt.move(coords)
 # {'action': 'set_tanks', 'tanks': [{'team': 'red', 'number': 1, 'position': {'x': 2, 'y': 7, 'angle': 0}, 'dead': False}, {'team': 'red', 'number': 2, 'position': {'x': 3, 'y': 7, 'angle': 0}, 'dead': False}, {'team': 'red', 'number': 3, 'position': {'x': 4, 'y': 7, 'angle': 0}, 'dead': False}, {'team': 'blue', 'number': 4, 'position': {'x': 5, 'y': 0, 'angle': 0}, 'dead': False}, {'team': 'blue', 'number': 5, 'position': {'x': 6, 'y': 0, 'angle': 0}, 'dead': False}, {'team': 'blue', 'number': 6, 'position': {'x': 7, 'y': 0, 'angle': 0}, 'dead': False}]}
 
@@ -33,10 +31,14 @@ def foundTank(position):
             return tank
     return None
 
+step_show_surface = pygame.Surface((cells["size"] * 3, cells["size"] * 3))  # the size of your rect
+step_show_surface.set_alpha(128)                # alpha level
+step_show_surface.fill((255, 0, 0))           # this fills the entire surface
+
 class Tank(object):
     def __init__(self, team, number, dead):
-        self.team = team,
-        self.number = number,
+        self.team = team
+        self.number = number
         self.dead = dead
         self.image = (t90_image if team == "red" else abrams_image)
         self.image = pygame.transform.scale(self.image, (72, 72)) 
@@ -48,4 +50,6 @@ class Tank(object):
         self.position.y = position.y
 
     def draw(self, surface):
+        if active_tank and active_tank.number == self.number:
+            surface.blit(step_show_surface, ((self.position.x - 1)  * cells["size"], (self.position.y - 1) * cells["size"]))
         surface.blit(self.image, (self.position.x  * cells["size"], self.position.y * cells["size"]))
