@@ -14,7 +14,7 @@ class Client {
     disconnect() {
         for (let i = 0; i < client_list.length; i++) {
             let client = client_list[i]
-            if (client && client.address === this.address) {
+            if (client && client.socket && client.address === this.address) {
                 if (client.socket && !client.socket.destroyed)
                     try {
                         client.socket.write(JSON.stringify({"command": "disconnect"}))
@@ -27,6 +27,11 @@ class Client {
     }
     send_data(data) {
         this.socket.write(JSON.stringify(data), 'utf-8');
+    }
+    broadcast_data(data) {
+        for (let client of client_list) {
+            client.send_data(data)
+        }
     }
 }
 

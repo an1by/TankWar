@@ -10,12 +10,13 @@ async function start_game() {
     for (let client of getWithType("client")) {
         client.step = (client.team == "red")
         client.send_data({
-            command: "set_tanks",
-            tanks: getTanks()
+            "action": "set_tanks",
+            "tanks": getTanks()
         })
     }
     Logger.success('Игра успешно запущена!')
 }
+
 
 function end_game() {
     for (let client of getWithType("client")) {
@@ -31,7 +32,7 @@ function end_game() {
 function send_time(change_step) {
     for (let client of getWithType("client")) {
         if (change_step)
-            client.step = client.step == "none" ? "none" : !client.step
+            client.step = client.step === "none" ? "none" : !client.step
         client.send_data({
             "action": "step_feedback",
             "time": step_timer,

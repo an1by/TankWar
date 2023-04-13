@@ -1,5 +1,5 @@
 import pygame
-import time
+import time, os
 from pygame.locals import *
 from pygame_widgets import *
 from ping3 import ping, verbose_ping
@@ -46,6 +46,11 @@ def is_empty(data):
 def load_resource(name):
     return pygame.image.load(os.path.join('resources', name)).convert_alpha()
 
+cells = {
+    "size": 86,
+    "sub_size": 86,
+    "amount": 8
+}
 
 class CoordinatesObject(object):
     def __init__(self, x, y):

@@ -77,9 +77,9 @@ class Tank {
     }
 }
 
-function getTank(number) {
+function getTank(number, team) {
     for (let tank of tank_list) {
-        if (tank.number === number)
+        if (tank.number === number, tank.team == team)
             return tank
     }
     return undefined

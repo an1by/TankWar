@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 from pygame_widgets import *
-import os
+import os, time
 import sys
 
 ### Инциализация PyGame ###
@@ -12,14 +12,8 @@ clock = pygame.time.Clock()
 allSprites = pygame.sprite.Group()
 display_info = pygame.display.Info()
 
-### Инициализация моих импортов ###
-import tcpip
-import button
-from utils import CoordinatesObject
-import utils
-import tanks
-
 ### Основной экран ###
+from utils import CoordinatesObject, cells
 screen_size = (
     display_info.current_w,
     display_info.current_h
@@ -28,11 +22,6 @@ scren_coeff = 1080 / display_info.current_h
 screen = pygame.display.set_mode(screen_size, FULLSCREEN)
 
 ### Constants ###
-cells = {
-    "size": 86,
-    "sub_size": 86,
-    "amount": 8
-}
 cell_size = cells["size"] * cells["amount"]
 razdiscell = [
     int((display_info.current_w - cell_size) // 2),
@@ -46,6 +35,12 @@ game_status = "server_select" # main / game / settings / server_select
 #rootPath = os.path.dirname(__file__)
 #resourcesPath = os.path.join(rootPath, "resources")
 
+### Инициализация моих импортов ###
+import tcpip
+import button
+import utils
+import tanks
+
 ### Настраиваем пути текстур ###
 def getImage(name):
     return pygame.image.load("./resources/" + name + ".png").convert_alpha()
@@ -53,8 +48,10 @@ def getImage(name):
 def getImageBox(name):
     return pygame.transform.scale(getImage(name), (cells["sub_size"], cells["sub_size"]))
 
-lime_box = getImageBox("lime_box")
-green_box = getImageBox("green_box")
+# lime_box = getImageBox("lime_box")
+# green_box = getImageBox("green_box")
+box1 = getImageBox("boxes/1")
+box2 = getImageBox("boxes/2")
 obstacle = getImageBox("obstacle")
 river = getImageBox("river")
 
@@ -78,12 +75,10 @@ sub_cells_amount = cells["amount"] * cells["size"] // cells["sub_size"]
 for i in range(0, sub_cells_amount):
     for j in range(0, sub_cells_amount):
         boxSprite = pygame.sprite.Sprite()
-        boxSprite.image = (lime_box if j%2 == i%2 else green_box)
-        boxSprite.rect = (lime_box if j%2 == i%2 else green_box).get_rect()
+        boxSprite.image = (box1 if j%2 == i%2 else box2)
+        boxSprite.rect = (box1 if j%2 == i%2 else box2).get_rect()
         boxSprite.rect.x = i*cells["sub_size"]
         boxSprite.rect.y = j*cells["sub_size"]
-        boxSprite.custom_type = ("lime_box" if j%2 == i%2 else "green_box")
-        boxSprite.custom_state = "empty"
         allSprites.add(boxSprite)
 
 ### Кнопки ###
@@ -137,6 +132,12 @@ def main():
     step_time = 30
     current_cell = [-1, -1]
     received = None
+
+    colors = {
+        "me": (97, 65, 67),
+        "enemy": (52, 69, 76)
+    }
+
     while True:
         clock.tick(60)
         
@@ -148,21 +149,24 @@ def main():
         else:
             for received in tcpip.get_data():
                 if received and received["action"]:
+                    print(received)
                     match (received['action']):
                         case "step_feedback":
                             current_step = None if received['step'] == "none" else received['step']
                             step_time = received['time']
                         case "init":
                             team = received["team"]
-                            if team == "red":
-                                teamcolor = (255,0,0)
-                                enemycolor = (0,0,255)
-                            else:
-                                teamcolor = (0,0,255)
-                                enemycolor = (255,0,0)
                         case "set_tanks":
-                            margin = CoordinatesObject(razdiscell[0], cells["size"] * 0.5)
-                            tanks.setList(received["tanks"], margin, cells["size"])
+                            tanks.setList(received["tanks"])
+                        case "move_tank":
+                            founded_tank = tanks.getByNumber(received["team"], received["number"])
+                            if founded_tank:
+                                founded_tank.move(
+                                    CoordinatesObject(
+                                        received["position"]["x"],
+                                        received["position"]["y"]
+                                    )
+                                )
             timer = 0
             #updateField()
         
@@ -171,24 +175,32 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and current_step == True:
+                if event.button == 1 and game_status == "game" and current_step == True:
                     margin_w = razdiscell[0]
                     margin_h = cells["size"] * 0.5
                     posX, posY = pygame.mouse.get_pos()
                     posX -= margin_w
                     posY -= margin_h
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
-                        position = [int(posX // cells["size"]), int(posY // cells["size"])] # 0, 1, 2, 3, 4, 5, 6, 7
-                        
-                    pass
-                    # ЛКМ
+                        position = CoordinatesObject(int(posX // cells["size"]), int(posY // cells["size"])) # 0, 1, 2, 3, 4, 5, 6, 7
+                        if not tanks.active_tank:
+                            founded_tank = tanks.foundTank(position)
+                            if founded_tank.team == team:
+                                tanks.active_tank = tanks.foundTank(position)
+                        else:
+                            tanks.active_tank.move(position)
+                            tcpip.send_data({
+                                "command": "step",
+                                "what": "move",
+                                "number": tanks.active_tank.number
+                            })
+                            tanks.active_tank = None
                     
-                        
         allSprites.update()
         match (game_status):
             case "game":
                 # Фон\
-                screen.fill((37, 250, 73))
+                screen.fill((108, 108, 108))
                 # Размеры
                 sb_w = razdiscell[0]
                 sb_h = cells["size"] * 0.5
@@ -201,13 +213,13 @@ def main():
                 # Отрисовка танков
                 for tank in tanks.tank_list:
                     tank.draw(game_canvas)
-                match(current_step):
-                    case False:
-                        pygame.draw.circle(screen, enemycolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
-                        utils.draw_text(screen, str(step_time) + "c" , enemycolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
-                    case True:
-                        pygame.draw.circle(screen, teamcolor, (display_info.current_w * 0.9 , display_info.current_h * 0.858),130,30)
-                        utils.draw_text(screen, str(step_time) + "c" , teamcolor, display_info.current_w * 0.9 ,display_info.current_h * 0.858)
+                
+                
+                if current_step != None:
+                    display_pos = (display_info.current_w * 0.89, display_info.current_h * 0.83)
+                    current_color = colors["me"] if current_step == True else colors["enemy"]
+                    pygame.draw.circle(screen, current_color, display_pos, 130, 30)
+                    utils.draw_text(screen, str(step_time) + "c" , current_color, display_pos[0], display_pos[1])
             case "server_select":
                 screen.blit(main_canvas, (0, 0))
                 main_canvas.fill((37, 250, 73))

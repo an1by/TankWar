@@ -8,7 +8,7 @@ const {createAddress, createPosition, arrayToPosition} = require("./utils.js");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
 let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles.js");
 let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
-let {start_game} = require("./game_controller.js")
+let {start_game, send_time} = require("./game_controller.js")
 
 let raspberry = undefined;
 
@@ -17,6 +17,16 @@ for (let i = 0; i < 6; i++) {
     t.position.x = i;
     t.position.y = i;
 }
+
+for (let i = 1; i <= 6; i++) {
+    let new_tank = new Tank(i, (i < 4 ? "red" : "blue"), undefined);
+    position = {
+        x: (i + 1),
+        y: (i < 4 ? 7 : 0)
+    }
+    new_tank.move(position)
+}
+Logger.info('Танков инициализировано: ' + tank_list.length)
 
 const server = net.createServer(async (socket) => {
     const address = createAddress(socket);
@@ -27,19 +37,7 @@ const server = net.createServer(async (socket) => {
     } catch (e) {
         //
     }
-
-    for (let i = 1; i <= 6; i++) {
-        let new_tank = new Tank(i, (i < 4 ? "red" : "blue"), undefined);
-        if (data["move"]) {
-            position = {
-                x: (i + 1),
-                y: (i < 4 ? 7 : 0)
-            }
-            new_tank.move(position)
-        }
-    }
-    Logger.info('Танков инициализировано: ' + tank_list.length)
-
+    let client = undefined
     socket.on('data', async (received) => {
         try {
             let recv = received.toString();
@@ -125,7 +123,7 @@ const server = net.createServer(async (socket) => {
                         case "client": {
                             let counter = countClientType("client")
                             if (counter < 2) {
-                                let client = new Client(socket, data["who"])
+                                client = new Client(socket, data["who"])
                                 Logger.success(`${data["who"]} №${counter} инициализирован. Адрес: ` + address)
                                 counter += 1
                                 team = (counter === 1 ? "blue" : "red")
@@ -147,7 +145,7 @@ const server = net.createServer(async (socket) => {
                             //     return;
                             const number = data["number"],
                                 position = data["position"]
-                            let tank = getTank(number);
+                            let tank = getTank(number, client.team);
                             if (!tank)
                                 return;
                             if (position.x < 0 || position.y < 0) {
@@ -156,18 +154,28 @@ const server = net.createServer(async (socket) => {
                                 return;
                             }
                             tank.move(position)
+                            client.broadcast_data({
+                                "action": "move_tank",
+                                "team": client.team,
+                                "number": tank.number,
+                                "position": position
+                            })
+                            send_time(true)
                             break
                         }
                         case "fire": { // От танка
-                            const tank = getTank(data["number"]);
-                            const target_position = data["position"]
+                            const number = data["number"],
+                                target_position = data["position"]
+                            const tank = getTank(number, client.team);
                             if (!tank) {
-                                Logger.error(`Танк с номером ${data["number"]} не найден!`)
+                                Logger.error(`Танк с номером ${number} не найден!`)
                                 return;
                             }
                             const result = tank.fire(target_position)
-                            Logger.info(`Танк №${tank.number} выстрелил! ${result.message}`)
-                            socket.write(JSON.stringify(result), 'utf-8') // fire_feedback
+                            Logger.info(`Танк №${number} из команды ${client.team} выстрелил! ${result.message}`)
+                            client.send_data(result)
+                            client.broadcast_data(result)
+                            send_time(true)
                             break
                         }
                     }
