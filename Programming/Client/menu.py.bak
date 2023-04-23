@@ -1,0 +1,36 @@
+from pygame.math import Vector2
+import button
+from utils import getImage
+
+move_button = button.Button(0, 0, getImage("menu/move"), 0.3)
+# rotate_button = button.Button(0, 0, getImage("menu/move"), 0.5)
+fire_button = button.Button(0, 0, getImage("menu/shot"), 0.3)
+
+class Menu(object):
+    def __init__(self, x, y):
+        self.show = False
+        self.buttons = [move_button, fire_button]
+        self.set_position(x, y)
+    
+    def set_position(self, x, y):
+        blength = len(self.buttons)
+        degrees_per_button = 360 // blength
+        for i in range(blength):
+            angle = degrees_per_button * (i - 1)
+            vec = Vector2()
+            vec.from_polar((35, angle))
+            self.buttons[i].set_position(
+                vec[0] + x,
+                vec[1] + y
+            )
+
+    def set_margin(self, x, y):
+        for button in self.buttons:
+            button.set_margin(x, y)
+
+    def draw(self, surface):
+        pressed = []
+        if self.show:
+            for button in self.buttons:
+                pressed.append(button.draw(surface))
+        return pressed

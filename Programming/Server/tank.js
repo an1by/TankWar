@@ -8,7 +8,7 @@ class Tank {
         this.team = team
         this.number = number
         for (let tank of tank_list) {
-            if (tank.number === number) {
+            if (tank.number === number && tank.team == team) {
                 this.position = tank.position
                 this.dead = tank.dead
                 return this;
@@ -28,9 +28,8 @@ class Tank {
         this.position.y = position.y
     }
     disconnect() {
-        if (!this.client)
-            return true
-        this.client.disconnect();
+        if (this.client)
+            this.client.disconnect();
         return true
     }
     fire(target_position) {
@@ -79,7 +78,7 @@ class Tank {
 
 function getTank(number, team) {
     for (let tank of tank_list) {
-        if (tank.number === number, tank.team == team)
+        if (tank.number === number && tank.team == team)
             return tank
     }
     return undefined

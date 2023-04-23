@@ -11,11 +11,22 @@ class Button():
 		self.rect = self.image.get_rect()
 		self.rect.topleft = (x, y)
 		self.clicked = False
+		self.margin = (0, 0)
+
+	def set_position(self, x, y):
+		self.rect.topleft = (x, y)
+
+	def set_margin(self, x, y):
+		self.margin = (x, y)
 
 	def draw(self, surface):
 		action = False
 		#get mouse position
 		pos = pygame.mouse.get_pos()
+		pos = (
+			pos[0] - self.margin[0],
+			pos[1] - self.margin[1]
+		)
 
 		#check mouseover and clicked conditions
 		if self.rect.collidepoint(pos):

@@ -7,15 +7,26 @@ const Logger = require("./logger.js");
 const {createAddress, createPosition, arrayToPosition} = require("./utils.js");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
 let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles.js");
-let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
+let {Client, client_list, getClient, getWithType, countClientType, broadcast_data_all} = require("./client.js")
 let {start_game, send_time} = require("./game_controller.js")
 
 let raspberry = undefined;
 
 for (let i = 0; i < 6; i++) {
-    const t = new Tank(i+1, i >= 3 ? "blue" : "red", undefined)
+    let team = (i > 2 ? "red" : "blue")
+    let number = i
+    if (number > 2) 
+        number -= 3
+    const t = new Tank(number, team, undefined)
     t.position.x = i;
-    t.position.y = i;
+    t.position.y = team == "red" ? 0 : 7;
+    // for (let cl of getWithType("client"))
+    //     cl.send_data({
+    //         "action": "move_tank",
+    //         "team": team,
+    //         "number": number,
+    //         "position": t.position
+    //     })
 }
 
 Logger.info('Танков инициализировано: ' + tank_list.length)
@@ -145,12 +156,17 @@ const server = net.createServer(async (socket) => {
                                 Logger.warning(`Танк №${number} вышел за поле! Отключен.`)
                                 return;
                             }
+                            const last_pos = tank.position;
                             tank.move(position)
                             client.broadcast_data({
                                 "action": "move_tank",
                                 "team": client.team,
                                 "number": tank.number,
                                 "position": position
+                            })
+                            broadcast_data_all("controller", {
+                                "from": last_pos,
+                                "to": tank.position
                             })
                             send_time(true)
                             break
@@ -181,15 +197,16 @@ const server = net.createServer(async (socket) => {
     socket.on('error', function(ex) {
         // console.log(ex)
         // ignore
+        if (client) {
+            client.disconnect()
+        }
+        Logger.info('Устройство отключено произвольно или вследствие ошибки. IP: ' + address)
     });
       
 
     socket.on('end', () => {
-        for (let instance of [getClient(address), getTank(address)]) {
-            if (instance) {
-                instance.disconnect()
-                break
-            }
+        if (client) {
+            client.disconnect()
         }
         Logger.info('Устройство отключено. IP: ' + address)
     });

@@ -1,5 +1,4 @@
 import pygame
-import time, os
 from pygame.locals import *
 from pygame_widgets import *
 from ping3 import ping, verbose_ping
@@ -43,8 +42,11 @@ def draw_text(surface, text, text_color, x, y):
 def is_empty(data):
     return data == {} or data == None or data == ''
 
-def load_resource(name):
-    return pygame.image.load(os.path.join('resources', name)).convert_alpha()
+def getImage(name):
+    return pygame.image.load("./resources/" + name + ".png").convert_alpha()
+
+def getImageBox(name):
+    return pygame.transform.scale(getImage(name), (cells["sub_size"], cells["sub_size"]))
 
 cells = {
     "size": 86,

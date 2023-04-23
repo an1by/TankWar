@@ -37,6 +37,13 @@ class Client {
     }
 }
 
+function broadcast_data_all(who_type, data) {
+    for (let client of getClient(who_type)) {
+        if (client.socket)
+            client.socket.write(JSON.stringify(data), 'utf-8');
+    }
+}
+
 function getWithType(type) {
     let array = []
     for (let client of client_list) {
@@ -64,5 +71,5 @@ function countClientType(type) {
 }
 
 module.exports = {
-    Client, client_list, getClient, getWithType, countClientType
+    Client, client_list, getClient, getWithType, countClientType, broadcast_data_all
 }

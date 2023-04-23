@@ -42,18 +42,14 @@ import utils
 import tanks
 
 ### Настраиваем пути текстур ###
-def getImage(name):
-    return pygame.image.load("./resources/" + name + ".png").convert_alpha()
 
-def getImageBox(name):
-    return pygame.transform.scale(getImage(name), (cells["sub_size"], cells["sub_size"]))
 
 # lime_box = getImageBox("lime_box")
 # green_box = getImageBox("green_box")
-box1 = getImageBox("boxes/1")
-box2 = getImageBox("boxes/2")
-obstacle = getImageBox("obstacle")
-river = getImageBox("river")
+box1 = utils.getImageBox("boxes/1")
+box2 = utils.getImageBox("boxes/2")
+obstacle = utils.getImageBox("obstacle")
+river = utils.getImageBox("river")
 
 screenScrollX = 0
 screenScrollY = 0
@@ -82,8 +78,32 @@ for i in range(0, sub_cells_amount):
         allSprites.add(boxSprite)
 
 ### Кнопки ###
-settings_button = button.Button(0, 0, getImage("button"), 1)
+# settings_button = button.Button(0, 0, getImage("button"), 1)
 servers_buttons = []
+change_choose_button = button.CanvasButton(
+    720, 80,
+    410, 760,
+    [80, 80, 80],
+    { # 
+        "x": 0,
+        "y": 0
+    },
+    [ # Contents
+        {
+            "text": "Огонь/Двигаться",
+            "color": (255, 255, 255),
+            "x": 10,
+            "y": 30
+        }
+    ],
+    { # Transparent
+        "color": [60, 60, 60],
+        "time": 0.5
+    }
+)
+# Меню
+# 410 760
+# 1130 840
 
 cellmargin = round(cells["size"] * 0.2)
 for index, server in enumerate(utils.servers):
@@ -122,6 +142,7 @@ def updateField():
 def main():
     global game_status
     global servers_buttons
+    global menu
     current_step = None # True: step / False: waiting / None: waiting in game start
     not_avalaible = {
         "timer": 0,
@@ -130,13 +151,14 @@ def main():
     timer = 0
     team = None
     step_time = 30
-    current_cell = [-1, -1]
+    current_choose = "" # "" - ничего, move = передвижение, fire = стрельба, rotate = поворот
     received = None
 
     colors = {
         "me": (97, 65, 67),
         "enemy": (52, 69, 76)
     }
+
 
     while True:
         clock.tick(60)
@@ -152,6 +174,8 @@ def main():
                     match (received['action']):
                         case "step_feedback":
                             current_step = None if received['step'] == "none" else received['step']
+                            if received["step"] == "none" or not received["step"]:
+                                current_choose = ""
                             step_time = received['time']
                         case "init":
                             team = received["team"]
@@ -170,37 +194,45 @@ def main():
                                 )
             timer = 0
             #updateField()
-        
+        # Events Handler
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                match event.key:
+                    case K_e:
+                        if game_status == "game" and current_step == True and tanks.active_tank:
+                            current_choose = "move" if current_choose == "fire" else "fire"
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and game_status == "game" and current_step == True:
                     margin_w = razdiscell[0]
                     margin_h = cells["size"] * 0.5
                     posX, posY = pygame.mouse.get_pos()
+                    print(posX, posY)
                     posX -= margin_w
                     posY -= margin_h
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
                         position = CoordinatesObject(int(posX // cells["size"]), int(posY // cells["size"])) # 0, 1, 2, 3, 4, 5, 6, 7
                         if not tanks.active_tank:
                             founded_tank = tanks.foundTank(position)
-                            if founded_tank:
-                                print(founded_tank.number, founded_tank.team, team)
-                                print(founded_tank.team == team)
                             if founded_tank and founded_tank.team == team:
                                 tanks.active_tank = founded_tank
+                                current_choose = "move"
                         else:
-                            tanks.active_tank.move(position)
-                            tcpip.send_data({
-                                "command": "step",
-                                "what": "move",
-                                "number": tanks.active_tank.number,
-                                "position": position.to_json()
-                            })
-                            tanks.active_tank = None
-                    
+                            match (current_choose):
+                                case "move":
+                                    if tanks.active_tank.move_and_send(position):
+                                        tanks.active_tank = None
+                                case "fire":
+                                    if tanks.active_tank.fire_and_send(position):
+                                        tanks.active_tank = None
+                                case "rotate":
+                                    pass
+                                case _:
+                                    tanks.active_tank = None
+
+        # Drawing
         allSprites.update()
         match (game_status):
             case "game":
@@ -217,13 +249,28 @@ def main():
                 allSprites.draw(game_canvas)
                 # Отрисовка танков
                 for tank in tanks.tank_list:
-                    tank.draw(game_canvas)
+                    tank.draw(game_canvas, current_choose)
                 
                 if current_step != None:
                     display_pos = (display_info.current_w * 0.89, display_info.current_h * 0.83)
                     current_color = colors["me"] if current_step == True else colors["enemy"]
                     pygame.draw.circle(screen, current_color, display_pos, 130, 30)
                     utils.draw_text(screen, str(step_time) + "c" , current_color, display_pos[0], display_pos[1])
+
+                    if game_status == "game" and current_step == True and tanks.active_tank:
+                        if change_choose_button.draw(screen, False):
+                            current_choose = "move" if current_choose == "fire" else "fire"
+                    # if current_step:
+                    #     for index, value in enumerate(menu.draw(game_canvas)):
+                    #         print(index, value)
+                    #         if value:
+                    #             match (index):
+                    #                 case 0:
+                    #                     current_choose = "move"
+                    #                 case 1:
+                    #                     current_choose = "fire"
+                    #         print(current_choose)
+
             case "server_select":
                 screen.blit(main_canvas, (0, 0))
                 main_canvas.fill((37, 250, 73))
@@ -261,6 +308,7 @@ def main():
                 #     game_status = "game"
             case "settings":
                 pass
+
         pygame.display.flip()
         received = None
 
