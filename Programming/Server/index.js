@@ -7,7 +7,7 @@ const Logger = require("./logger.js");
 const {createAddress, createPosition, arrayToPosition} = require("./utils.js");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
 let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles.js");
-let {Client, client_list, getClient, getWithType, countClientType, broadcast_data_all} = require("./client.js")
+let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
 let {start_game, send_time} = require("./game_controller.js")
 
 let raspberry = undefined;
@@ -138,6 +138,10 @@ const server = net.createServer(async (socket) => {
                             }
                             break
                         }
+                        default: {
+                            client = new Client(socket, data["who"])
+                            break
+                        }
                     }
                     break
                 }
@@ -158,13 +162,13 @@ const server = net.createServer(async (socket) => {
                             }
                             const last_pos = tank.position;
                             tank.move(position)
-                            client.broadcast_data({
+                            client.broadcast_data("client", {
                                 "action": "move_tank",
                                 "team": client.team,
                                 "number": tank.number,
                                 "position": position
                             })
-                            broadcast_data_all("controller", {
+                            client.broadcast_data("controller", {
                                 "from": last_pos,
                                 "to": tank.position
                             })
@@ -182,7 +186,7 @@ const server = net.createServer(async (socket) => {
                             const result = tank.fire(target_position)
                             Logger.info(`Танк №${number} из команды ${client.team} выстрелил! ${result.message}`)
                             client.send_data(result)
-                            client.broadcast_data(result)
+                            client.broadcast_data("client", result)
                             send_time(true)
                             break
                         }
