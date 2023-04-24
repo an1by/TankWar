@@ -12,23 +12,6 @@ let {start_game, send_time} = require("./game_controller.js")
 
 let raspberry = undefined;
 
-for (let i = 0; i < 6; i++) {
-    let team = (i > 2 ? "red" : "blue")
-    let number = i
-    if (number > 2) 
-        number -= 3
-    const t = new Tank(number, team, undefined)
-    t.position.x = i;
-    t.position.y = team == "red" ? 0 : 7;
-    // for (let cl of getWithType("client"))
-    //     cl.send_data({
-    //         "action": "move_tank",
-    //         "team": team,
-    //         "number": number,
-    //         "position": t.position
-    //     })
-}
-
 Logger.info('Танков инициализировано: ' + tank_list.length)
 
 const server = net.createServer(async (socket) => {

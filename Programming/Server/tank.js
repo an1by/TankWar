@@ -30,6 +30,12 @@ class Tank {
     disconnect() {
         if (this.client)
             this.client.disconnect();
+        for (let i = 0; i < tank_list.length; i++) {
+            let tank = tank_list[i]
+            if (tank && tank.client.address === this.client.address) {
+                tank_list.splice(i, 1);
+            }
+        }
         return true
     }
     fire(target_position) {
