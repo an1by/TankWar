@@ -45,7 +45,7 @@ const server = net.createServer(async (socket) => {
         try {
             let recv = received.toString();
             let data = JSON.parse(recv);
-            print(data)
+            console.log(data)
             switch (data["command"]) {
                 case "ready_move": {
                     break
