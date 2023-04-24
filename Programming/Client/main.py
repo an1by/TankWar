@@ -223,23 +223,22 @@ def main():
                     posY -= margin_h
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
                         position = CoordinatesObject(int(posX // cells["size"]), int(posY // cells["size"])) # 0, 1, 2, 3, 4, 5, 6, 7
-                        if not tanks.active_tank:
-                            founded_tank = tanks.foundTank(position)
-                            if founded_tank and founded_tank.team == team and not founded_tank.dead:
-                                tanks.active_tank = founded_tank
-                                current_choose = "move"
-                        else:
+                        founded_tank = tanks.foundTank(position)
+                        if tanks.active_tank:
                             match (current_choose):
                                 case "move":
                                     tanks.active_tank.move_and_send(position)
-                                    tanks.active_tank = None
                                 case "fire":
                                     tanks.active_tank.fire_and_send(position)
-                                    tanks.active_tank = None
                                 case "rotate":
                                     pass
                                 case _:
-                                    tanks.active_tank = None
+                                    pass
+                        if founded_tank and founded_tank.team == team and not founded_tank.dead:
+                            tanks.active_tank = founded_tank
+                            current_choose = "move"
+                        else:
+                            tanks.active_tank = None
 
         # Drawing
         allSprites.update()

@@ -70,6 +70,7 @@ async function start_timer() {
         } else if (step_timer == -10) {
             end_game()
             clearInterval(id)
+            return
         } else {
             step_timer = 30
             send_time(true)
