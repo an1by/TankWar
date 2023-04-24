@@ -63,12 +63,13 @@ function send_time(change_step) {
 }
 
 async function start_timer() {
-    setInterval(() => {
+    let id = setInterval(() => {
         if (step_timer > 0) {
             step_timer -= 1
             send_time(false)
         } else if (step_timer == -10) {
             end_game()
+            clearInterval(id)
         } else {
             step_timer = 30
             send_time(true)

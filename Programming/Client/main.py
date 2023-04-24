@@ -231,11 +231,11 @@ def main():
                         else:
                             match (current_choose):
                                 case "move":
-                                    if tanks.active_tank.move_and_send(position):
-                                        tanks.active_tank = None
+                                    tanks.active_tank.move_and_send(position)
+                                    tanks.active_tank = None
                                 case "fire":
-                                    if tanks.active_tank.fire_and_send(position):
-                                        tanks.active_tank = None
+                                    tanks.active_tank.fire_and_send(position)
+                                    tanks.active_tank = None
                                 case "rotate":
                                     pass
                                 case _:
