@@ -45,9 +45,14 @@ const server = net.createServer(async (socket) => {
         try {
             let recv = received.toString();
             let data = JSON.parse(recv);
+            print(data)
             switch (data["command"]) {
+                case "ready_move": {
+                    break
+                }
                 case "log": {
                     console.log(data["message"])
+                    break
                 }
                 case "get": {
                     switch (data["what"]) {
@@ -160,17 +165,17 @@ const server = net.createServer(async (socket) => {
                                 Logger.warning(`Танк №${number} вышел за поле! Отключен.`)
                                 return;
                             }
-                            const last_pos = tank.position;
+                            client.broadcast_data("controller", {
+                                "action": "move_tank",
+                                "from": tank.position,
+                                "to": position
+                            })
                             tank.move(position)
                             client.broadcast_data("client", {
                                 "action": "move_tank",
                                 "team": client.team,
                                 "number": tank.number,
                                 "position": position
-                            })
-                            client.broadcast_data("controller", {
-                                "from": last_pos,
-                                "to": tank.position
                             })
                             send_time(true)
                             break

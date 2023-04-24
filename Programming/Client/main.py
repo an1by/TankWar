@@ -183,6 +183,15 @@ def main():
                                 colors["me"], colors["enemy"] = colors["enemy"], colors["me"]
                         case "set_tanks":
                             tanks.setList(received["tanks"])
+                        case "fire_feedback":
+                            obj = received["object"]
+                            match obj["name"]:
+                                case "none":
+                                    pass
+                                case "obstacle":
+                                    pass
+                                case "tank":
+                                    tanks.getByNumber(obj["team"], obj["number"]).kill()
                         case "move_tank":
                             founded_tank = tanks.getByNumber(received["team"], received["number"])
                             if founded_tank:
@@ -216,7 +225,7 @@ def main():
                         position = CoordinatesObject(int(posX // cells["size"]), int(posY // cells["size"])) # 0, 1, 2, 3, 4, 5, 6, 7
                         if not tanks.active_tank:
                             founded_tank = tanks.foundTank(position)
-                            if founded_tank and founded_tank.team == team:
+                            if founded_tank and founded_tank.team == team and not founded_tank.dead:
                                 tanks.active_tank = founded_tank
                                 current_choose = "move"
                         else:

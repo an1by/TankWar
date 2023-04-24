@@ -15,6 +15,8 @@ def setList(new_list):
 
 t90_image = getImage('tanks/t-90')
 abrams_image = getImage('tanks/abrams')
+t90_dead_image = getImage('tanks/t-90_dead')
+abrams_dead_image = getImage('tanks/abrams_dead')
 
 def getByNumber(team, number):
     for tank in tank_list:
@@ -49,6 +51,11 @@ class Tank(object):
         self.position.angle = 90
         tank_list.append(self)
     
+    def kill(self):
+        self.dead = True
+        self.image = (t90_dead_image if self.team == "red" else abrams_dead_image)
+        self.image = pygame.transform.scale(self.image, (72, 72)) 
+    
     def move_and_send(self, position):
         if self.move(position):
             tcpip.send_data({
@@ -69,6 +76,8 @@ class Tank(object):
         return False
 
     def can_move(self, position):
+        if self.dead:
+            return False
         moving = abs(self.position.x - position.x) + abs(self.position.y - position.y)
         if moving == 1:
             for tank in tank_list:
@@ -101,6 +110,8 @@ class Tank(object):
                 ]
 
     def can_fire(self, position):
+        if self.dead:
+            return False
         ranges = self.get_ranges()
         for x in ranges[0]:
             for y in ranges[1]:
@@ -120,7 +131,7 @@ class Tank(object):
         return False
 
     def draw(self, surface, current_choose):
-        if active_tank and active_tank.number == self.number and active_tank.team == self.team:
+        if active_tank and active_tank.number == self.number and active_tank.team == self.team and not self.dead:
             match (current_choose):
                 case "move":
                     for x in range(-1, 2):

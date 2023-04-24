@@ -39,7 +39,8 @@ class Tank {
             return {
                 "action": "fire_feedback",
                 "object": {
-                    "name": "none"
+                    "name": "none",
+                    "position": obstacle.position
                 },
                 "message": `(Не найдена цель, выстрел в пустоту)`
             }
@@ -69,7 +70,7 @@ class Tank {
             "object": {
                 "name": "tank",
                 "number": target.number,
-                "position": target.position
+                "team": target.team
             },
             "message": `(Уничтожен танк №${target.number})`
         }

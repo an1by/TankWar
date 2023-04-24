@@ -2,7 +2,7 @@ const {getWithType} = require("./client")
 const Logger = require("./logger.js");
 const { getTanks } = require("./tank");
 
-let step_timer = 30
+let step_timer = -10
 
 async function start_game() {
     step_timer = 30
@@ -19,6 +19,7 @@ async function start_game() {
 
 
 function end_game() {
+    step_timer = -10
     for (let client of getWithType("client")) {
         client.step = "none"
         client.send_data({
