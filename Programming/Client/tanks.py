@@ -9,8 +9,7 @@ def setList(new_list):
     for tank in new_list:
         print(tank)
         newt = Tank(tank["team"], tank["number"], tank["dead"])
-        newt.position.x = tank["position"]["x"]
-        newt.position.y = tank["position"]["y"]
+        newt.set_position(CoordinatesObject().from_json(tank["position"]))
 # {'action': 'set_tanks', 'tanks': [{'team': 'red', 'number': 1, 'position': {'x': 2, 'y': 7, 'angle': 0}, 'dead': False}, {'team': 'red', 'number': 2, 'position': {'x': 3, 'y': 7, 'angle': 0}, 'dead': False}, {'team': 'red', 'number': 3, 'position': {'x': 4, 'y': 7, 'angle': 0}, 'dead': False}, {'team': 'blue', 'number': 4, 'position': {'x': 5, 'y': 0, 'angle': 0}, 'dead': False}, {'team': 'blue', 'number': 5, 'position': {'x': 6, 'y': 0, 'angle': 0}, 'dead': False}, {'team': 'blue', 'number': 6, 'position': {'x': 7, 'y': 0, 'angle': 0}, 'dead': False}]}
 
 t90_image = getImage('tanks/t-90')
@@ -23,8 +22,6 @@ def getByNumber(team, number):
         if tank.number == number and tank.team == team:
             return tank
     return None
-
-active_tank = None #
 
 def foundTank(position):
     for tank in tank_list:
@@ -42,21 +39,35 @@ fire_surface.fill((255, 0, 0))
 
 class Tank(object):
     def __init__(self, team, number, dead):
+        """
+        Инициализация танков
+        """
         self.team = team
         self.number = number
         self.dead = dead
-        self.image = (t90_image if team == "red" else abrams_image)
-        self.image = pygame.transform.scale(self.image, (72, 72)) 
+
+        self.original_image = pygame.transform.scale((t90_image if team == "red" else abrams_image), (72, 72))
+        self.image = self.original_image
+
         self.position = CoordinatesObject(0, 0)
-        self.position.angle = 90
+        # self.position.angle = number * 90
+        # self.rotate(self.position.angle)
+
         tank_list.append(self)
     
     def kill(self):
+        """
+        Функция для инициализации убийства танка
+        """
         self.dead = True
-        self.image = (t90_dead_image if self.team == "red" else abrams_dead_image)
-        self.image = pygame.transform.scale(self.image, (72, 72)) 
-    
+        self.original_image = pygame.transform.scale((t90_dead_image if self.team == "red" else abrams_dead_image), (72, 72))
+        self.image = self.original_image
+        self.rotate(self.position.angle)
+
     def move_and_send(self, position):
+        """
+        Функция для передвижения танка и инициализации этого передвижения на сервере
+        """
         if self.move(position):
             tcpip.send_data({
                 "command": "step",
@@ -67,11 +78,18 @@ class Tank(object):
             return True
         return False
 
+    def rotate(self, angle):
+        self.image = pygame.transform.rotate(self.original_image, angle - 90)
+
+    def set_position(self, position):
+        self.position.x, self.position.y = position.x, position.y
+        if position.angle:
+            self.position.angle = position.angle
+            self.rotate(position.angle)
+
     def move(self, position):
         if self.can_move(position):
-            self.position.x, self.position.y = position.x, position.y
-            if position.angle:
-                self.position.angle = position.angle
+            self.set_position(position)
             return True
         return False
 
@@ -88,11 +106,6 @@ class Tank(object):
     
     def get_ranges(self):
         match self.position.angle:
-            case 0:
-                return [
-                    range(1, 4),
-                    range(-1, 2)
-                ]
             case 180:
                 return [
                     range(-3, 0),
@@ -103,10 +116,15 @@ class Tank(object):
                     range(-1, 2),
                     range(1, 4)
                 ]
-            case _: # 90 - вверх
+            case 90: # 90 - вверх
                 return [
                     range(-1, 2),
                     range(-3, 0)
+                ]
+            case _:
+                return [
+                    range(1, 4),
+                    range(-1, 2)
                 ]
 
     def can_fire(self, position):
@@ -156,3 +174,8 @@ class Tank(object):
                                 (new_pos.x  * cells["size"], new_pos.y * cells["size"])
                             )
         surface.blit(self.image, (self.position.x  * cells["size"], self.position.y * cells["size"]))
+
+"""
+Активный выбранный танк
+"""
+active_tank: Tank = None

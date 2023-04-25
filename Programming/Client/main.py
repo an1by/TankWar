@@ -137,9 +137,15 @@ for index, server in enumerate(utils.servers):
     servers_buttons.append(server_button)
 
 def updateField():
+    """
+    Обновляет позицию препятствий на поле
+    """
     tcpip.send_data({"command"})
 
 def main():
+    """
+    Основной рабочий класс
+    """
     global game_status
     global servers_buttons
     global menu
@@ -159,6 +165,7 @@ def main():
         "enemy": (52, 69, 76)
     }
 
+    temp_position = None
 
     while True:
         clock.tick(60)
@@ -196,10 +203,7 @@ def main():
                             founded_tank = tanks.getByNumber(received["team"], received["number"])
                             if founded_tank:
                                 founded_tank.move(
-                                    CoordinatesObject(
-                                        received["position"]["x"],
-                                        received["position"]["y"]
-                                    )
+                                    CoordinatesObject().from_json(received["position"])
                                 )
             timer = 0
             #updateField()
@@ -209,10 +213,27 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                match event.key:
-                    case K_e:
-                        if game_status == "game" and current_step == True and tanks.active_tank:
-                            current_choose = "move" if current_choose == "fire" else "fire"
+                if game_status == "game" and current_step == True:
+                    angle = -1
+                    match event.key:
+                        case pygame.K_e:
+                            if tanks.active_tank and current_choose == "move" or current_choose == "fire":
+                                current_choose = "move" if current_choose == "fire" else "fire"
+                        case pygame.K_d:
+                            angle = 360
+                        case pygame.K_w:
+                            angle = 90
+                        case pygame.K_a:
+                            angle = 180
+                        case pygame.K_s:
+                            angle = 270
+                    if angle >= 0 and current_choose == "rotate" and temp_position != None:
+                        temp_position.angle = angle
+                        tanks.active_tank.move_and_send(temp_position)
+                        temp_position = None
+                        tanks.active_tank = None
+                        current_step = False
+                    angle = -1
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and game_status == "game" and current_step == True:
                     margin_w = razdiscell[0]
@@ -227,16 +248,21 @@ def main():
                         if tanks.active_tank:
                             match (current_choose):
                                 case "move":
-                                    tanks.active_tank.move_and_send(position)
+                                    temp_position = position
+                                    current_choose = "rotate"
+                                    # tanks.active_tank.move_and_send(position)
                                 case "fire":
                                     tanks.active_tank.fire_and_send(position)
+                                    current_step = False
                                 case "rotate":
                                     pass
                                 case _:
                                     pass
-                        if founded_tank and founded_tank.team == team and not founded_tank.dead:
+                        if founded_tank and founded_tank.team == team and not founded_tank.dead and current_step:
                             tanks.active_tank = founded_tank
                             current_choose = "move"
+                        elif current_step and temp_position and current_choose == "rotate":
+                            pass
                         else:
                             tanks.active_tank = None
 

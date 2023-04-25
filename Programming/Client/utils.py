@@ -55,7 +55,7 @@ cells = {
 }
 
 class CoordinatesObject(object):
-    def __init__(self, x, y):
+    def __init__(self, x = -1, y = -1):
         self.x = x
         self.y = y
         self.angle = 0
@@ -73,3 +73,9 @@ class CoordinatesObject(object):
             "y": self.y,
             "angle": self.angle
         }
+    
+    def from_json(self, json):
+        self = CoordinatesObject(json["x"], json["y"])
+        if not (json.get("angle") is None):
+            self.angle = json["angle"]
+        return self
