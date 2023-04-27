@@ -66,18 +66,18 @@ const server = net.createServer(async (socket) => {
                     switch (data["what"]) {
                         case "obstacles": {
                             data["list"].forEach(obs => {
-                                const positions = obs["positions"]
-                                const state = obs["state"]
-                                if (positions[0] && positions[1] && obs["state"]) {
+                                if (obs["positions"] && positions[0] && positions[1] && obs["type"]) {
+                                    const positions = obs["positions"]
+                                    const type = obs["type"]
                                     let obstacle = getObstacleWithArray(positions);
-    
+                                    
                                     if (obstacle) {
-                                        if (state == "empty")
+                                        if (type == "empty")
                                             obstacle.delete();
                                         else 
-                                            obstacle.state = state;
+                                            obstacle.type = type;
                                     }
-                                    else new Obstacle(obs[type], positions[0], positions[1]);
+                                    else new Obstacle(type, positions[0], positions[1]);
                                 }
                             });
                         }

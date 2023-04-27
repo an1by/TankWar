@@ -7,20 +7,27 @@ import pygame
 
 obstacle_images = {
     "river": getImage('boxes/river'),
-    "full": getImage('boxes/full'),
-    "forest": getImage('boxes/forest')
+    "full": getImage('boxes/full')
 }
 
 obstacle_list = []
+
 class Obstacle(object):
-    def __init__(self, x, y, type):
-        self.position = CoordinatesObject(x, y)
+    def __init__(self, position, type):
+        self.position = position
         self.type = type
         self.image = pygame.transform.scale(obstacle_images[type], (cells["size"], cells["size"]))
         obstacle_list.append(self)
     
     def draw(self, surface):
         surface.blit(self.image, (self.position.x  * cells["size"], self.position.y * cells["size"]))
+
+def setList(obstacles):
+    for obstacle in obstacles:
+        Obstacle(
+            CoordinatesObject().from_json(obstacle["position"]),
+            obstacle["type"]
+        )
 
 def foundObstacle(position: CoordinatesObject):
     global obstacle_list

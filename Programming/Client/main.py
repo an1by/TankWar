@@ -40,6 +40,7 @@ import tcpip
 import button
 import utils
 import tanks
+import obstacles
 
 ### Настраиваем пути текстур ###
 
@@ -138,9 +139,9 @@ for index, server in enumerate(utils.servers):
 
 def updateField():
     """
-    Обновляет позицию препятствий на поле
+    Посылает запрос на обновлений позиций препятствий на поле
     """
-    tcpip.send_data({"command"})
+    tcpip.send_data({"command":"get", "what": "obstacles"})
 
 def main():
     """
@@ -190,6 +191,8 @@ def main():
                                 colors["me"], colors["enemy"] = colors["enemy"], colors["me"]
                         case "set_tanks":
                             tanks.setList(received["tanks"])
+                        case "set_obstacles":
+                            obstacles.setList(received["obstacles"])
                         case "fire_feedback":
                             obj = received["object"]
                             match obj["name"]:
@@ -248,12 +251,13 @@ def main():
                         if tanks.active_tank:
                             match (current_choose):
                                 case "move":
-                                    temp_position = position
-                                    current_choose = "rotate"
+                                    if tanks.active_tank.can_move(position):
+                                        temp_position = position
+                                        current_choose = "rotate"
                                     # tanks.active_tank.move_and_send(position)
                                 case "fire":
-                                    tanks.active_tank.fire_and_send(position)
-                                    current_step = False
+                                    if tanks.active_tank.fire_and_send(position):
+                                        current_step = False
                                 case "rotate":
                                     pass
                                 case _:
@@ -281,6 +285,9 @@ def main():
                 screen.blit(game_canvas, (sb_w, sb_h))
                 # Отрисовка квадратов
                 allSprites.draw(game_canvas)
+                # Отрисовка препятсвтий
+                for obstacle in obstacles.obstacle_list:
+                    obstacle.draw(game_canvas)
                 # Отрисовка танков
                 for tank in tanks.tank_list:
                     tank.draw(game_canvas, current_choose)

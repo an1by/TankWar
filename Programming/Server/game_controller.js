@@ -1,10 +1,12 @@
 const {getWithType} = require("./client")
 const Logger = require("./logger.js");
 const { getTanks, Tank, tank_list } = require("./tank");
+const { getObstacles, Obstacle, obstacle_list } = require("./obstacles")
 
 let step_timer = -10
 
 async function start_game() {
+    //////TO DELETE//////
     for (let i = 0; i < 6; i++) {
         let team = (i > 2 ? "red" : "blue")
         let number = i
@@ -14,7 +16,15 @@ async function start_game() {
         t.position.x = i;
         t.position.y = team == "red" ? 0 : 7;
     }
-    //////////////////////
+    //////TO DELETE//////
+    new Obstacle("river", 2, 3);
+    new Obstacle("river", 2, 4);
+    new Obstacle("river", 3, 5);
+    new Obstacle("river", 4, 6);
+    new Obstacle("full", 5, 4);
+    new Obstacle("full", 5, 5);
+    new Obstacle("full", 4, 5);
+    //////TO DELETE//////
     step_timer = 30
     await start_timer()
     for (let client of getWithType("client")) {
@@ -22,6 +32,10 @@ async function start_game() {
         client.send_data({
             "action": "set_tanks",
             "tanks": getTanks()
+        })
+        client.send_data({
+            "action": "set_obstacles",
+            "obstacles": getObstacles()
         })
     }
     Logger.success('Игра успешно запущена!')

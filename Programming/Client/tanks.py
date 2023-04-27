@@ -1,6 +1,6 @@
 import pygame
 from utils import CoordinatesObject, cells, getImage
-import tcpip
+import tcpip, obstacles
 tank_list = []
 
 def setList(new_list):
@@ -98,6 +98,8 @@ class Tank(object):
             return False
         moving = abs(self.position.x - position.x) + abs(self.position.y - position.y)
         if moving == 1:
+            if obstacles.raycastTrajectory(self.position, position) != []:
+                return False
             for tank in tank_list:
                 if tank.position.x == position.x and tank.position.y == position.y:
                     return False
@@ -127,13 +129,38 @@ class Tank(object):
                     range(-1, 2)
                 ]
 
+    def raycast(self, position):
+        arr = []
+        rx = abs(self.position.x - position.x)
+        ry = abs(self.position.y - position.y)
+        k = ry / rx if rx != 0 else 0
+        for x in range(self.position.x, position.x + 1):
+            y = k * x
+            tank = foundTank(CoordinatesObject(x, y))
+            if tank != None and tank != self:
+                arr.append(tank)
+        return arr
+
     def can_fire(self, position):
         if self.dead:
             return False
         ranges = self.get_ranges()
         for x in ranges[0]:
             for y in ranges[1]:
-                if self.position.x + x == position.x and self.position.y + y == position.y:
+                new_position = CoordinatesObject(
+                    self.position.x + x,
+                    self.position.y + y
+                )
+                if new_position.x == position.x and new_position.y == position.y:
+                    for obstacle in obstacles.raycastTrajectory(
+                        self.position,
+                        new_position
+                    ):
+                        if obstacle.type == "full":
+                            return False
+                    found = foundTank(new_position)
+                    if found and (found.team == self.team or found.dead):
+                        return False
                     return True
         return False
 
@@ -170,9 +197,10 @@ class Tank(object):
                                 self.position.x + x,
                                 self.position.y + y
                             )
-                            surface.blit(fire_surface, 
-                                (new_pos.x  * cells["size"], new_pos.y * cells["size"])
-                            )
+                            if self.can_fire(new_pos):
+                                surface.blit(fire_surface, 
+                                    (new_pos.x  * cells["size"], new_pos.y * cells["size"])
+                                )
         surface.blit(self.image, (self.position.x  * cells["size"], self.position.y * cells["size"]))
 
 """

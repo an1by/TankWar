@@ -1,9 +1,12 @@
 let obstacle_list = []
 
 class Obstacle {
-    constructor(state, first_position, second_position) {
-        this.position = [first_position, second_position]
-        this.state = state
+    constructor(type, x, y) {
+        this.position = {
+            x: x,
+            y: y
+        }
+        this.type = type
         obstacle_list.push(this)
     }
     delete() {
@@ -17,27 +20,25 @@ class Obstacle {
     }
 }
 
-function getObstacle(position) {
+function getObstacles() {
+    let obstacles = []
     for (let obstacle of obstacle_list) {
-        if (obstacle.position[0].x <= position.x <= obstacle.position[1].x && obstacle.position[0].y <= position.y <= obstacle.position[1].y)
-            return obstacle;
+        obstacles.push({
+            "position": obstacle.position,
+            "type": type
+        })
     }
-    return undefined;
+    return obstacles
 }
 
-function getObstacleWithArray(position_array) {
+function getObstacle(position) {
     for (let obstacle of obstacle_list) {
-        if (obstacle.position[0].x == position_array[0][0] &&
-            obstacle.position[0].y == position_array[0][1] &&
-            obstacle.position[1].x == position_array[1][0] &&
-            obstacle.position[1].y == position_array[1][1]
-        ) {
+        if (obstacle.position.x == position.x && obstacle.position.y == position.y)
             return obstacle;
-        }
     }
     return undefined;
 }
 
 module.exports = {
-    Obstacle, obstacle_list, getObstacle
+    Obstacle, obstacle_list, getObstacle, getObstacles
 }
