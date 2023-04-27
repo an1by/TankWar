@@ -44,6 +44,7 @@ async function start_game() {
 
 function end_game() {
     tank_list.forEach(tank => tank.disconnect())
+    obstacles_list.forEach(obstacle => obstacle.delete())
     ////////////////////
     step_timer = -10
     for (let client of getWithType("client")) {
