@@ -1,4 +1,4 @@
-let obstacle_list = []
+let obstacles_list = []
 
 class Obstacle {
     constructor(type, x, y) {
@@ -7,12 +7,12 @@ class Obstacle {
             y: y
         }
         this.type = type
-        obstacle_list.push(this)
+        obstacles_list.push(this)
     }
     delete() {
-        for (let i = 0; i < obstacle_list.length; i++){
-            if (obstacle_list[i].position === this.position) {
-                obstacle_list.splice(i, 1)
+        for (let i = 0; i < obstacles_list.length; i++){
+            if (obstacles_list[i].position === this.position) {
+                obstacles_list.splice(i, 1)
                 return true;
             }
         }
@@ -22,7 +22,7 @@ class Obstacle {
 
 function getObstacles() {
     let obstacles = []
-    for (let obstacle of obstacle_list) {
+    for (let obstacle of obstacles_list) {
         obstacles.push({
             "position": obstacle.position,
             "type": obstacle.type
@@ -32,7 +32,7 @@ function getObstacles() {
 }
 
 function getObstacle(position) {
-    for (let obstacle of obstacle_list) {
+    for (let obstacle of obstacles_list) {
         if (obstacle.position.x == position.x && obstacle.position.y == position.y)
             return obstacle;
     }
@@ -40,5 +40,5 @@ function getObstacle(position) {
 }
 
 module.exports = {
-    Obstacle, obstacle_list, getObstacle, getObstacles
+    Obstacle, obstacles_list, getObstacle, getObstacles
 }

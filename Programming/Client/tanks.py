@@ -98,7 +98,7 @@ class Tank(object):
             return False
         moving = abs(self.position.x - position.x) + abs(self.position.y - position.y)
         if moving == 1:
-            if obstacles.raycastTrajectory(self.position, position) != []:
+            if obstacles.foundObstacle(position):
                 return False
             for tank in tank_list:
                 if tank.position.x == position.x and tank.position.y == position.y:
@@ -152,12 +152,14 @@ class Tank(object):
                     self.position.y + y
                 )
                 if new_position.x == position.x and new_position.y == position.y:
-                    for obstacle in obstacles.raycastTrajectory(
-                        self.position,
-                        new_position
-                    ):
-                        if obstacle.type == "full":
-                            return False
+                    # for obstacle in obstacles.raycastTrajectory(
+                    #     self.position,
+                    #     new_position
+                    # ):
+                    #     if obstacle.type == "full":
+                    #         return False
+                    if obstacles.foundObstacle(new_position):
+                        return False
                     found = foundTank(new_position)
                     if found and (found.team == self.team or found.dead):
                         return False

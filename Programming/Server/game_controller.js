@@ -1,7 +1,7 @@
 const {getWithType} = require("./client")
 const Logger = require("./logger.js");
 const { getTanks, Tank, tank_list } = require("./tank");
-const { getObstacles, Obstacle, obstacle_list } = require("./obstacles")
+const { getObstacles, Obstacle, obstacles_list } = require("./obstacles")
 
 let step_timer = -10
 

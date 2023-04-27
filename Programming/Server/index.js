@@ -6,7 +6,7 @@ const net = require('net');
 const Logger = require("./logger.js");
 const {createAddress, createPosition, arrayToPosition} = require("./utils.js");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
-let {isObstacle, Obstacle, obstacle_list, getObstacle} = require("./obstacles.js");
+let {isObstacle, Obstacle, obstacles_list, getObstacle} = require("./obstacles.js");
 let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
 let {start_game, send_time} = require("./game_controller.js")
 
@@ -40,7 +40,7 @@ const server = net.createServer(async (socket) => {
                 case "get": {
                     switch (data["what"]) {
                         case "obstacles":
-                            return obstacle_list
+                            return obstacles_list
                         case "tanks":
                             return tank_list
                     }
@@ -52,12 +52,12 @@ const server = net.createServer(async (socket) => {
                             raspberry = undefined;
                             tank_list.forEach(tank => tank.disconnect())
                             tank_list = []
-                            obstacle_list = []
+                            obstacles_list = []
                             client_list.forEach(client => client.disconnect())
                             Logger.success('Данные очищены, клиенты отключены!')
                             break
                         case "obstacles":
-                            obstacle_list = []
+                            obstacles_list = []
                             break
                     }
                     break
