@@ -25,7 +25,7 @@ function getObstacles() {
     for (let obstacle of obstacle_list) {
         obstacles.push({
             "position": obstacle.position,
-            "type": type
+            "type": obstacle.type
         })
     }
     return obstacles
