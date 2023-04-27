@@ -108,22 +108,22 @@ class Tank(object):
     
     def get_ranges(self):
         match self.position.angle:
-            case 180:
-                return [
-                    range(-3, 0),
-                    range(-1, 2)
-                ]
-            case 270:
-                return [
-                    range(-1, 2),
-                    range(1, 4)
-                ]
-            case 90: # 90 - вверх
+            case 90: # Север
                 return [
                     range(-1, 2),
                     range(-3, 0)
                 ]
-            case _:
+            case 270: # Юг
+                return [
+                    range(-1, 2),
+                    range(1, 4)
+                ]
+            case 180: # Запад
+                return [
+                    range(-3, 0),
+                    range(-1, 2)
+                ]
+            case _: # Djcnjr
                 return [
                     range(1, 4),
                     range(-1, 2)

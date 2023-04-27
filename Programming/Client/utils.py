@@ -76,6 +76,6 @@ class CoordinatesObject(object):
     
     def from_json(self, json):
         self = CoordinatesObject(json["x"], json["y"])
-        if not (json.get("angle") is None):
+        if json["angle"]:
             self.angle = json["angle"]
         return self
