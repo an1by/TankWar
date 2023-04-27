@@ -46,7 +46,7 @@ class Tank {
                 "action": "fire_feedback",
                 "object": {
                     "name": "none",
-                    "position": obstacle.position
+                    "position": target_position
                 },
                 "message": `(Не найдена цель, выстрел в пустоту)`
             }
