@@ -1,7 +1,6 @@
 import pygame
 from pygame.locals import *
 from pygame_widgets import *
-import os, time
 import sys
 
 ### Инциализация PyGame ###
@@ -13,40 +12,22 @@ allSprites = pygame.sprite.Group()
 display_info = pygame.display.Info()
 
 ### Основной экран ###
-from utils import CoordinatesObject, cells
-screen_size = (
-    display_info.current_w,
-    display_info.current_h
-)
-scren_coeff = 1080 / display_info.current_h
-screen = pygame.display.set_mode(screen_size, FULLSCREEN)
-
-### Constants ###
-cell_size = cells["size"] * cells["amount"]
-razdiscell = [
-    int((display_info.current_w - cell_size) // 2),
-    int((display_info.current_h - cell_size) // 2)
-]
-
-### Variables ###
-game_status = "server_select" # main / game / settings / server_select
-
-### Настраиваем директории ###
-#rootPath = os.path.dirname(__file__)
-#resourcesPath = os.path.join(rootPath, "resources")
+screen = pygame.display.set_mode((display_info.current_w, display_info.current_h), FULLSCREEN)
+from storage import *
+"""
+Главный Surface
+"""
 
 ### Инициализация моих импортов ###
+from utils import CoordinatesObject, cells
 import tcpip
-import button
 import utils
 import tanks
 import obstacles
+from credits import Credits
+credits = Credits()
 
 ### Настраиваем пути текстур ###
-
-
-# lime_box = getImageBox("lime_box")
-# green_box = getImageBox("green_box")
 box1 = utils.getImageBox("boxes/1")
 box2 = utils.getImageBox("boxes/2")
 obstacle = utils.getImageBox("obstacle")
@@ -57,11 +38,14 @@ screenScrollY = 0
 
 ###### Canvas'ы ######
 ### Canvas игры ###
-game_canvas = pygame.Surface((cell_size, cell_size))
+game_canvas = pygame.Surface((all_cells_size, all_cells_size))
 
 ### Canvas меню ###
-main_canvas = pygame.Surface((display_info.current_w, display_info.current_h))
-server_select_canvas = pygame.Surface((cell_size, cell_size))
+main_canvas = pygame.Surface(screen_size)
+menu_canvas = pygame.Surface(screen_size)
+authors_canvas = pygame.Surface(screen_size)
+settings_canvas = pygame.Surface(screen_size)
+server_select_canvas = pygame.Surface((all_cells_size, all_cells_size))
 
 ### Server Canvas ###
 
@@ -80,78 +64,16 @@ for i in range(0, sub_cells_amount):
 
 ### Кнопки ###
 # settings_button = button.Button(0, 0, getImage("button"), 1)
-servers_buttons = []
-change_choose_button = button.CanvasButton(
-    720, 80,
-    410, 760,
-    [80, 80, 80],
-    { # 
-        "x": 0,
-        "y": 0
-    },
-    [ # Contents
-        {
-            "text": "Огонь/Двигаться",
-            "color": (255, 255, 255),
-            "x": 10,
-            "y": 30
-        }
-    ],
-    { # Transparent
-        "color": [60, 60, 60],
-        "time": 0.5
-    }
-)
-# Меню
-# 410 760
-# 1130 840
 
-cellmargin = round(cells["size"] * 0.2)
-for index, server in enumerate(utils.servers):
-    server_button = button.CanvasButton(
-        cell_size - 40, cells["size"], # width, height
-        cellmargin, cellmargin + (cells["size"] + cellmargin) * index, # x, y
-        [80, 80, 80] if server["address"] != "" else [150, 150, 150], # Color
-        { # additionals_to_coords
-            "x": razdiscell[0],
-            "y": razdiscell[1]
-        },
-        [ # Contents
-            {
-                "text": "Сервер " + server["name"],
-                "color": (255, 255, 255),
-                "x": 10,
-                "y": 30
-            },
-            {
-                "text": "ping|" + server["address"] if server["address"] != "" else "",
-                "color": (255, 255, 255),
-                "x": cell_size - 186,
-                "y": 30
-            }
-        ],
-        { # Transparent
-            "color": [60, 60, 60],
-            "time": 0.5
-        } if server["address"] != "" else None
-    )
-    servers_buttons.append(server_button)
-
-def updateField():
-    """
-    Посылает запрос на обновлений позиций препятствий на поле
-    """
-    tcpip.send_data({"command":"get", "what": "obstacles"})
 
 def main():
     """
     Основной рабочий класс
     """
-    global game_status
-    global servers_buttons
-    global menu
+    game_status = "menu" # menu / game / settings / server_select
+    # global servers_buttons
     current_step = None # True: step / False: waiting / None: waiting in game start
-    not_avalaible = {
+    not_available = {
         "timer": 0,
         "text": ""
     }
@@ -171,8 +93,8 @@ def main():
     while True:
         clock.tick(60)
         
-        if not_avalaible["timer"] > 0:
-            not_avalaible["timer"] -= 1
+        if not_available["timer"] > 0:
+            not_available["timer"] -= 1
         
         if timer < 10:
             timer += 1
@@ -222,6 +144,11 @@ def main():
                         case pygame.K_e:
                             if tanks.active_tank and current_choose == "move" or current_choose == "fire":
                                 current_choose = "move" if current_choose == "fire" else "fire"
+                        case pygame.K_ESCAPE:
+                            if tanks.active_tank and current_step:
+                                tanks.active_tank = None
+                                temp_position = None
+                                current_choose = ""
                         case pygame.K_d:
                             angle = 360
                         case pygame.K_w:
@@ -242,7 +169,6 @@ def main():
                     margin_w = razdiscell[0]
                     margin_h = cells["size"] * 0.5
                     posX, posY = pygame.mouse.get_pos()
-                    print(posX, posY)
                     posX -= margin_w
                     posY -= margin_h
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
@@ -254,7 +180,6 @@ def main():
                                     if tanks.active_tank.can_move(position):
                                         temp_position = position
                                         current_choose = "rotate"
-                                    # tanks.active_tank.move_and_send(position)
                                 case "fire":
                                     if tanks.active_tank.fire_and_send(position):
                                         current_step = False
@@ -280,7 +205,7 @@ def main():
                 sb_w = razdiscell[0]
                 sb_h = cells["size"] * 0.5
                 # Обводка
-                pygame.draw.rect(screen, (65, 65, 65), (sb_w - 20, sb_h - 20, sb_w + cell_size//2.29 , sb_h + cell_size * 0.988))
+                pygame.draw.rect(screen, (65, 65, 65), (sb_w - 20, sb_h - 20, sb_w + all_cells_size//2.29 , sb_h + all_cells_size * 0.988))
                 # Применение игрового канваса
                 screen.blit(game_canvas, (sb_w, sb_h))
                 # Отрисовка квадратов
@@ -293,24 +218,49 @@ def main():
                     tank.draw(game_canvas, current_choose)
                 
                 if current_step != None:
-                    display_pos = (display_info.current_w * 0.89, display_info.current_h * 0.83)
+                    display_pos = (screen_size[0] * 0.89, screen_size[1] * 0.83)
                     current_color = colors["me"] if current_step == True else colors["enemy"]
                     pygame.draw.circle(screen, current_color, display_pos, 130, 30)
-                    utils.draw_text(screen, str(step_time) + "c" , current_color, display_pos[0], display_pos[1])
+                    utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
 
                     if game_status == "game" and current_step == True and tanks.active_tank:
-                        if change_choose_button.draw(screen, False):
-                            current_choose = "move" if current_choose == "fire" else "fire"
-                    # if current_step:
-                    #     for index, value in enumerate(menu.draw(game_canvas)):
-                    #         print(index, value)
-                    #         if value:
-                    #             match (index):
-                    #                 case 0:
-                    #                     current_choose = "move"
-                    #                 case 1:
-                    #                     current_choose = "fire"
-                    #         print(current_choose)
+                        match current_choose:
+                            case "move", "fire":
+                                if change_choose_button.draw(screen, False):
+                                    current_choose = "move" if current_choose == "fire" else "fire"
+
+            case "menu":
+                screen.blit(main_canvas, (0, 0))
+                main_canvas.fill((37, 250, 73))
+                main_canvas.blit(menu_canvas, (0, 0))
+                menu_canvas.fill((100, 100, 100))
+
+                utils.draw_text(menu_canvas, "Танковый бой", screen_size[0], cells["size"]*1.5)
+                if menu_buttons["play"].draw(menu_canvas):
+                    game_status = "server_select"
+                if menu_buttons["settings"].draw(menu_canvas):
+                    game_status = "settings"
+                if menu_buttons["authors"].draw(menu_canvas):
+                    game_status = "authors"
+
+            case "authors":
+                screen.blit(main_canvas, (0, 0))
+                main_canvas.fill((37, 250, 73))
+                main_canvas.blit(authors_canvas, (0, 0))
+                authors_canvas.fill((100, 100, 100))
+                credits.draw(authors_canvas)
+
+            case "settings":
+                # settings_buttons
+                screen.blit(main_canvas, (0, 0))
+                main_canvas.fill((37, 250, 73))
+                main_canvas.blit(settings_canvas, (0, 0))
+                settings_canvas.fill((100, 100, 100))
+
+                for key in settings_buttons.keys():
+                    if settings_buttons[key].draw(settings_canvas):
+                        settings_buttons[key].switch()
+
 
             case "server_select":
                 screen.blit(main_canvas, (0, 0))
@@ -320,36 +270,40 @@ def main():
                 main_canvas.blit(server_select_canvas, (sb_w, sb_h))
                 server_select_canvas.fill((100, 100, 100))
                 
-                alpha = round(255 / 120 * not_avalaible["timer"])
-                text = utils.font.render(not_avalaible["text"], True, (255, 255, 255))
+                alpha = round(255 / 6 * not_available["timer"])
+                text = utils.arial_font.render(not_available["text"], True, (255, 255, 255))
                 text.set_alpha(alpha if alpha <= 255 else 255)
-                text_rect = text.get_rect(center = (display_info.current_w//2, 40))
+                text_rect = text.get_rect(center = (screen_size[0]//2, 40))
                 main_canvas.blit(text, text_rect)
                 
                 ### Server Canvas ###
                 for server_button in servers_buttons:
                     if server_button.draw(server_select_canvas, (timer == 0)):
                         #game_status = "game"
-                        not_avalaible["timer"] = 200
-                        not_avalaible["text"] = ""
-                        match (server_button.contents[0]["text"].replace("Сервер ", "")):
-                            case "СССР":
-                                not_avalaible["text"] = "СССР не найден, сервер недоступен."
-                            case "Пиндосостан":
-                                not_avalaible["text"] = "Роскомнадзор заблокировал сервер."
-                            case "КГБ":
-                                not_avalaible["text"] = "Подключение не удалось, обратитесь к подполковнику Путину."
-                            case "ФСБ":
-                                not_avalaible["text"] = "СОБР уже выехал, ожидайте под вашими окнами."
-                            case _:
-                                tcpip.connect_default()
-                                tcpip.init()
-                                game_status = "game"
+                        if server_button.available():
+                            tcpip.connect(server_button.server["address"], server_button.server["port"])
+                            tcpip.init()
+                            game_status = "game"
+                        elif "not_available" in server_button.server:
+                            not_available["timer"] = 100
+                            not_available["text"] = server_button.server["not_available"]
                 # if settings_button.draw(main_canvas):
                 #     game_status = "game"
             case "settings":
                 pass
 
+        if up_buttons["exit"].draw(screen):
+            pygame.quit()
+            sys.exit()
+        if up_buttons["iconify"].draw(screen):
+            pygame.display.iconify()
+        match (game_status):
+            case "settings" | "server_select" | "authors":
+                if up_buttons["back"].draw(screen):
+                    game_status = "menu"
+            case "game":
+                if up_buttons["back"].draw(screen):
+                    game_status = "server_select"
         pygame.display.flip()
         received = None
 

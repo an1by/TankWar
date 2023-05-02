@@ -7,37 +7,33 @@ def ping_server(server):
     pong = ping(server)
     return str(round(pong * 1000)) + " мс" if pong else "0 мс"
 
-servers = [
-    {
-        "name": "Aniby.NET",
-        "address": "play.aniby.net",
-        "port": 3030
-    },
-    {
-        "name": "СССР",
-        "address": ""
-    },
-    {
-        "name": "Пиндосостан",
-        "address": ""
-    },
-    {
-        "name": "КГБ",
-        "address": ""
-    },
-    {
-        "name": "ФСБ",
-        "address": ""
-    }
-]
-
 pygame.font.init()
-font = pygame.font.SysFont('arial', 36)
+arial_font = pygame.font.SysFont('arial', 36)
 
-def draw_text(surface, text, text_color, x, y):
-    global font
-    img = font.render(str(text), True, text_color)
-    surface.blit(img, (x,y))
+def get_text_render(text, font=arial_font, text_color = (255, 255, 255)):
+    return font.render(str(text), True, text_color)
+
+def draw_text(surface, text: pygame.Surface | str, x, y, text_color = (255, 255, 255), orientation: str="", font=arial_font):
+    if not font:
+        font = arial_font
+    img = text if isinstance(text, pygame.Surface) else font.render(str(text), True, text_color)
+    position = (x, y)
+    if orientation != "":
+        sw, sh = surface.get_size()
+        tw, th = img.get_width(), img.get_height()
+        mw, mh = 30, th * 0.08
+        match orientation:
+            case "up":
+                position = img.get_rect(center=(sw//2 + mw + x, mh + y))
+            case "down":
+                position = img.get_rect(center=(sw//2 + mw + x, sh-th + mh + y))
+            case "center":
+                position = img.get_rect(center=(sw//2 + x, sh//2 + y))
+            case "left":
+                position = img.get_rect(center=(tw//2 + mw + x, sh//2 + y))
+            case "right":
+                position = img.get_rect(center=(sw - tw - mw + x, sh//2 + y))
+    surface.blit(img, position)
 
 def is_empty(data):
     return data == {} or data == None or data == ''
@@ -58,11 +54,7 @@ class CoordinatesObject(object):
     def __init__(self, x = -1, y = -1):
         self.x = x
         self.y = y
-        self.angle = 0
-        self.center = None
-    
-    def set_center(self, x, y):
-        self.center = CoordinatesObject(x, y)
+        self.angle: float = 0.0
     
     def to_tuple(self):
         return (self.x, self.y)
@@ -76,6 +68,6 @@ class CoordinatesObject(object):
     
     def from_json(self, json):
         self = CoordinatesObject(json["x"], json["y"])
-        if json["angle"]:
+        if "angle" in json:
             self.angle = json["angle"]
         return self

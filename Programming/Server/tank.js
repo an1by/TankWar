@@ -1,5 +1,6 @@
 const {getObstacle} = require("./obstacles");
-const {Client} = require("./client")
+const {Client, getWithType} = require("./client")
+const {getAngle, sleep} = require("./utils")
 let tank_list = []
 
 class Tank {
@@ -7,6 +8,10 @@ class Tank {
         this.client = new Client(socket, "tank")
         this.team = team
         this.number = number
+        this.temp_target = {
+            x: -1,
+            y: -1
+        }
         for (let tank of tank_list) {
             if (tank.number === number && tank.team == team) {
                 this.position = tank.position
@@ -38,7 +43,26 @@ class Tank {
         }
         return true
     }
-    fire(target_position) {
+    pre_fire(target_position) {
+        this.temp_target = target_position
+        let new_pos = this.position;
+        new_pos.angle = getAngle(this.position, target_position);
+        this.client.broadcast_data("controller", {
+            "action": "move_tank",
+            "from": this.position,
+            "to": new_pos
+        })
+    }
+    fire() {
+        this.client.send_data({
+            action: "fire"
+        })
+        sleep(1000);
+        let target_position = this.temp_target;
+        this.temp_target = {
+            x: -1,
+            y: -1
+        }
         const target = getTankByPosition(target_position)
         if (!target) {
             // this.socket.write('miss')
@@ -71,6 +95,7 @@ class Tank {
         // this.socket.write('target_killed')
         target.dead = true;
         // target.socket.write('dead');
+        target.client.send_data({action: "status", life: false})
         return {
             "action": "fire_feedback",
             "object": {

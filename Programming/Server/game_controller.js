@@ -3,7 +3,8 @@ const Logger = require("./logger.js");
 const { getTanks, Tank, tank_list } = require("./tank");
 const { getObstacles, Obstacle, obstacles_list } = require("./obstacles")
 
-let step_timer = -10
+let step_timer = -10;
+let pause = false;
 
 async function start_game() {
     //////TO DELETE//////
@@ -42,7 +43,6 @@ async function start_game() {
     Logger.success('Игра успешно запущена!')
 }
 
-
 function end_game() {
     tank_list.forEach(tank => tank.disconnect())
     obstacles_list.forEach(obstacle => obstacle.delete())
@@ -59,14 +59,24 @@ function end_game() {
     Logger.success('Игра успещно завершена!')
 }
 
-function send_time(change_step) {
+function pause_game(status) {
+    pause = status
+    if (pause)
+        send_time(step="pause")
+    else
+        send_time(change_step=true)
+}
+
+function send_time(change_step=false, step=undefined) {
     let clients = getWithType("client")
     if (clients.length !== 2) {
         end_game()
         return
     }
     for (let client of clients) {
-        if (change_step) {
+        if (step) {
+            client.step = step
+        } else if (change_step) {
             client.step = client.step === "none" ? "none" : !client.step
             step_timer = 30
         }
@@ -80,9 +90,11 @@ function send_time(change_step) {
 
 async function start_timer() {
     let id = setInterval(() => {
-        if (step_timer > 0) {
+        if (pause) {
+            
+        } else if (step_timer > 0) {
             step_timer -= 1
-            send_time(false)
+            send_time()
         } else if (step_timer == -10) {
             end_game()
             clearInterval(id)
@@ -95,5 +107,5 @@ async function start_timer() {
 }
 
 module.exports = {
-    start_timer, start_game, end_game, send_time
+    start_timer, start_game, end_game, send_time, pause_game
 }

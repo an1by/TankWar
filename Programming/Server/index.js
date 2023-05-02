@@ -4,15 +4,15 @@ require('dotenv').config()
 
 const net = require('net');
 const Logger = require("./logger.js");
-const {createAddress, createPosition, arrayToPosition} = require("./utils.js");
+const {createAddress, createPosition, arrayToPosition, getAngle} = require("./utils.js");
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
 let {isObstacle, Obstacle, obstacles_list, getObstacle} = require("./obstacles.js");
 let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
-let {start_game, send_time} = require("./game_controller.js")
+let {start_game, send_time, pause_game, pause} = require("./game_controller.js")
 
 let raspberry = undefined;
 
-Logger.info('Танков инициализировано: ' + tank_list.length)
+Logger.info('Танков инициализировано: ' + tank_list.length);
 
 const server = net.createServer(async (socket) => {
     const address = createAddress(socket);
@@ -81,7 +81,7 @@ const server = net.createServer(async (socket) => {
                                 }
                             });
                         }
-                    }
+                    с
                     break
                 }
                 case "init": {
@@ -136,8 +136,8 @@ const server = net.createServer(async (socket) => {
                 case "step": {
                     switch (data["what"]) {
                         case "move": {
-                            // if (address !== raspberry.address)
-                            //     return;
+                            if (!client || client.type !== "client")
+                                return
                             const number = data["number"],
                                 position = data["position"]
                             let tank = getTank(number, client.team);
@@ -163,7 +163,9 @@ const server = net.createServer(async (socket) => {
                             send_time(true)
                             break
                         }
-                        case "fire": { // От танка
+                        case "fire": { // От клиента
+                            if (!client || client.type !== "client")
+                                return
                             const number = data["number"],
                                 target_position = data["position"]
                             const tank = getTank(number, client.team);
@@ -171,12 +173,29 @@ const server = net.createServer(async (socket) => {
                                 Logger.error(`Танк с номером ${number} не найден!`)
                                 return;
                             }
-                            const result = tank.fire(target_position)
-                            Logger.info(`Танк №${number} из команды ${client.team} выстрелил! ${result.message}`)
-                            client.send_data(result)
-                            client.broadcast_data("client", result)
-                            send_time(true)
-                            break
+                            tank.pre_fire(target_position)
+                        }
+                        case "final_fire": {
+                            if (!client || client.type !== "controller")
+                                return
+                            let result = undefined,
+                                tank = undefined;
+                            for (let d_tank of tank_list) {
+                                if (d_tank.temp_target.x !== -1) {
+                                    result = d_tank.fire()
+                                    tank = d_tank
+                                    break
+                                }
+                            }
+                            if (result && tank) {
+                                Logger.info(`Танк №${tank.number} из команды ${tank.team} выстрелил! ${result.message}`)
+                                client.send_data(result)
+                                client.broadcast_data("client", result)
+                                send_time(true)
+                                pause_game(false)
+                            } else {
+                                Logger.error(`Танк с предварительной целью для атаки не найден!`)
+                            }
                         }
                     }
                 }
@@ -194,7 +213,6 @@ const server = net.createServer(async (socket) => {
         }
         Logger.info('Устройство отключено произвольно или вследствие ошибки. IP: ' + address)
     });
-      
 
     socket.on('end', () => {
         if (client) {
