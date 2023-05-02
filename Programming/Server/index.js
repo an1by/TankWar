@@ -174,10 +174,13 @@ const server = net.createServer(async (socket) => {
                                 return;
                             }
                             tank.pre_fire(target_position)
+                            if (getWithType("controller").length > 0) {
+                                break
+                            }
                         }
                         case "final_fire": {
-                            if (!client || client.type !== "controller")
-                                return
+                            // if (!client || client.type !== "controller")
+                            //     return
                             let result = undefined,
                                 tank = undefined;
                             for (let d_tank of tank_list) {
@@ -196,6 +199,7 @@ const server = net.createServer(async (socket) => {
                             } else {
                                 Logger.error(`Танк с предварительной целью для атаки не найден!`)
                             }
+                            break
                         }
                     }
                 }
