@@ -81,7 +81,7 @@ const server = net.createServer(async (socket) => {
                                 }
                             });
                         }
-                    с
+                    }
                     break
                 }
                 case "init": {
