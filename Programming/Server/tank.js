@@ -12,6 +12,11 @@ class Tank {
             x: -1,
             y: -1
         }
+        this.temp_move = {
+            x: -1,
+            y: -1,
+            angle: -1
+        }
         for (let tank of tank_list) {
             if (tank.number === number && tank.team == team) {
                 this.position = tank.position
@@ -28,9 +33,29 @@ class Tank {
         tank_list.push(this)
         return this;
     }
-    move(position) {
-        this.position.x = position.x
-        this.position.y = position.y
+    pre_move(position) {
+        this.temp_move = {
+            x: position["x"],
+            y: position["y"],
+            angle: position["angle"]
+        }
+        this.client.broadcast_data("controller", {
+            "action": "move_tank",
+            "from": this.position,
+            "to": this.temp_move
+        })
+    }
+    move() {
+        if (this.temp_move.x !== -1) {
+            this.position = this.temp_move
+            this.temp_move = {
+                x: -1,
+                y: -1,
+                angle: -1
+            }
+            return `(X: ${this.position.x} | Y: ${this.position.y} | Угол: ${this.position.angle})`;
+        }
+        return undefined;
     }
     disconnect() {
         if (this.client)

@@ -281,13 +281,17 @@ class SwitchButton():
 
 		#draw button on screen
 		self.canvas.fill(self.get_color())
-		self.value_canvas.fill(self.get_second_color())
 		surface.blit(self.canvas, (self.x, self.y))
-		surface.blit(self.value_canvas, (self.x + self.width - self.height, self.y))
 
 		self.text_canvas.fill((0,0,0,0))
-		draw_text(self.text_canvas, self. content["text"], self.content["x"], self.content["y"], orientation="left", font=self.font, text_color=self.content["color"])
-		draw_text(self.text_canvas, self.current(), self.content["x"], self.content["y"], orientation="right", font=self.font, text_color=self.content["color"])
+		if self.content["text"] != None:
+			self.value_canvas.fill(self.get_second_color())
+			surface.blit(self.value_canvas, (self.x + self.width - self.height, self.y))
+			
+			draw_text(self.text_canvas, self. content["text"], self.content["x"], self.content["y"], orientation="left", font=self.font, text_color=self.content["color"])
+			draw_text(self.text_canvas, self.current(), self.content["x"], self.content["y"], orientation="right", font=self.font, text_color=self.content["color"])
+		else:
+			draw_text(self.text_canvas, self.current(), self.content["x"], self.content["y"], orientation="center", font=self.font, text_color=self.content["color"])
 		surface.blit(self.text_canvas, (self.x, self.y))
 		
 		return action

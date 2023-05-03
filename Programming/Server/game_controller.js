@@ -62,22 +62,35 @@ function end_game() {
 function pause_game(status) {
     pause = status
     if (pause)
-        send_time(step="pause")
+        send_time(false, "pause")
     else
-        send_time(change_step=true)
+        send_time(true, "nonpause")
 }
 
 function send_time(change_step=false, step=undefined) {
-    let clients = getWithType("client")
-    if (clients.length !== 2) {
+    if (getWithType("client").length !== 2) {
         end_game()
         return
     }
-    for (let client of clients) {
-        if (step) {
-            client.step = step
-        } else if (change_step) {
-            client.step = client.step === "none" ? "none" : !client.step
+    for (let client of getWithType("client")) {
+        switch (step) {
+            case "pause":
+                client.step = client.step.toString() + '_pause'
+                break
+            case "nonpause":
+                console.log(client.step === 'true_pause')
+                client.step = (client.step === 'true_pause')
+                break
+            default:
+                if (step)
+                    client.step = step
+                break
+        }
+        if (change_step) {
+            switch (client.step) {
+                case true | false:
+                    client.step = !client.step
+            }
             step_timer = 30
         }
         client.send_data({

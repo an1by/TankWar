@@ -65,7 +65,6 @@ for i in range(0, sub_cells_amount):
 ### Кнопки ###
 # settings_button = button.Button(0, 0, getImage("button"), 1)
 
-
 def main():
     """
     Основной рабочий класс
@@ -100,6 +99,7 @@ def main():
             timer += 1
         else:
             for received in tcpip.get_data():
+                print(received)
                 if received and received["action"]:
                     match (received['action']):
                         case "step_feedback":
@@ -223,11 +223,31 @@ def main():
                     pygame.draw.circle(screen, current_color, display_pos, 130, 30)
                     utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
 
-                    if game_status == "game" and current_step == True and tanks.active_tank:
+                    if current_step == True and tanks.active_tank:
                         match current_choose:
-                            case "move", "fire":
-                                if change_choose_button.draw(screen, False):
+                            case "move" | "fire":
+                                if game_buttons["fire_move"].draw(screen):
                                     current_choose = "move" if current_choose == "fire" else "fire"
+                                    game_buttons["fire_move"].switch()
+                            case "rotate":
+                                for key in game_buttons["moving"].keys():
+                                    if game_buttons["moving"][key].draw(screen):
+                                        angle = 0
+                                        match (key):
+                                            case "up":
+                                                angle = 90
+                                            case "right":
+                                                angle = 360
+                                            case "down":
+                                                angle = 270
+                                            case "left":
+                                                angle = 180
+                                        if current_choose == "rotate" and temp_position != None:
+                                            temp_position.angle = angle
+                                            tanks.active_tank.move_and_send(temp_position)
+                                            temp_position = None
+                                            tanks.active_tank = None
+                                            current_step = False
 
             case "menu":
                 screen.blit(main_canvas, (0, 0))
