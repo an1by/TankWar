@@ -73,15 +73,25 @@ function change_step(step) {
     for (let client of getWithType("client")) {
         switch (step) {
             case "pause":
-                client.step = client.step.toString() + '_pause'
+                client.send_data({
+                    "action": "switch_pause",
+                    "pause": true
+                })
                 break
             case "nonpause":
-                console.log(client.step === 'true_pause')
-                client.step = (client.step === 'true_pause')
+                client.send_data({
+                    "action": "switch_pause",
+                    "pause": false
+                })
                 break
             default:
                 if (step)
                     client.step = step
+                    client.send_data({
+                        "action": "step_feedback",
+                        "time": step_timer,
+                        "step": step
+                    })
                 break
         }
     }
@@ -111,17 +121,17 @@ function send_time(change_step=false) {
 
 async function start_timer() {
     let id = setInterval(() => {
-        if (!pause) {
-            if (step_timer > 0) {
-                step_timer -= 1
-                send_time()
-            } else if (step_timer <= -10) {
-                end_game()
-                clearInterval(id)
-                return
-            } else {
-                send_time(true)
-            }
+        if (pause) {
+            send_time()
+        } else if (step_timer > 0) {
+            step_timer -= 1
+            send_time()
+        } else if (step_timer <= -10) {
+            end_game()
+            clearInterval(id)
+            return
+        } else {
+            send_time(true)
         }
     }, 1000)
 }

@@ -79,6 +79,7 @@ def main():
     timer = 0
     team = None
     step_time = 30
+    pause = False
     current_choose = "" # "" - ничего, move = передвижение, fire = стрельба, rotate = поворот
     received = None
 
@@ -124,6 +125,12 @@ def main():
                                     pass
                                 case "tank":
                                     tanks.getByNumber(obj["team"], obj["number"]).kill()
+                        case "switch_pause":
+                            pause = received["pause"]
+                            if pause:
+                                tanks.active_tank = None
+                                temp_position = None
+                                current_choose = ""
                         case "move_tank":
                             founded_tank = tanks.getByNumber(received["team"], received["number"])
                             if founded_tank:
@@ -138,7 +145,7 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if game_status == "game" and current_step == True:
+                if game_status == "game" and current_step == True and not pause:
                     angle = -1
                     match event.key:
                         case pygame.K_e:
@@ -165,7 +172,7 @@ def main():
                         current_step = False
                     angle = -1
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and game_status == "game" and current_step == True:
+                if event.button == 1 and game_status == "game" and current_step == True and not pause:
                     margin_w = razdiscell[0]
                     margin_h = cells["size"] * 0.5
                     posX, posY = pygame.mouse.get_pos()
@@ -223,7 +230,7 @@ def main():
                     pygame.draw.circle(screen, current_color, display_pos, 130, 30)
                     utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
 
-                    if current_step == True and tanks.active_tank:
+                    if current_step == True and tanks.active_tank and not pass:
                         match current_choose:
                             case "move" | "fire":
                                 if game_buttons["fire_move"].draw(screen):
