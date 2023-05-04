@@ -116,7 +116,7 @@ def main():
                                 current_choose = ""
                             step_time = received['time']
                             if 'winner' in received:
-                                game_winner = 'winner'
+                                game_winner = received['winner']
                         case "init":
                             team = received["team"]
                             if team == "blue":
