@@ -51,7 +51,7 @@ function end_game(winner=undefined) {
     step_timer = -10
     for (const client of getWithType("client")) {
         client.step = "none"
-        json = {
+        let json = {
             "action": "step_feedback",
             "time": -10,
             "step": "none"

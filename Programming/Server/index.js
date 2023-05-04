@@ -173,18 +173,6 @@ const server = net.createServer(async (socket) => {
                                     "position": tank.position
                                 })
                                 pause_game(false)
-                                let dead_counter = [0, 0]
-                                let all_counter = [0, 0]
-                                tank_list.forEach((tank) => {
-                                    all_counter[(tank.team == "red") ? 0 : 1] += 1
-                                    if (tank.dead)
-                                        dead_counter[(tank.team == "red") ? 0 : 1] += 1
-                                })
-                                console.log(dead_counter, all_counter)
-                                if (dead_counter[0] == all_counter[0])
-                                    end_game("blue")
-                                else if (dead_counter[1] == all_counter[1])
-                                    end_game("red")
                             } else {
                                 Logger.error(`Танк с предварительной позицией для передвижения не найден!`)
                             }
@@ -223,6 +211,18 @@ const server = net.createServer(async (socket) => {
                                 client.send_data(result)
                                 client.broadcast_data("client", result)
                                 pause_game(false)
+
+                                let dead_counter = [0, 0]
+                                let all_counter = [0, 0]
+                                tank_list.forEach((tank) => {
+                                    all_counter[(tank.team == "red") ? 0 : 1] += 1
+                                    if (tank.dead)
+                                        dead_counter[(tank.team == "red") ? 0 : 1] += 1
+                                })
+                                if (dead_counter[0] == all_counter[0])
+                                    end_game("blue")
+                                else if (dead_counter[1] == all_counter[1])
+                                    end_game("red")
                             } else {
                                 Logger.error(`Танк с предварительной целью для атаки не найден!`)
                             }
