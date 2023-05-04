@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-import os
 import sys
 import manager
 
@@ -8,13 +7,10 @@ pygame.init()
 pygame.mixer.init()
 
 ###
-cells = {
-    "size": 64,
-    "sub_size": 32,
-    "amount": 8
-}
+from utils import *
+from tcpip import connection
+import tanks
 screen_size = (cells["size"] * cells["amount"], cells["size"] * cells["amount"])
-motion = "stop"
 
 screen = pygame.display.set_mode(screen_size) # 512, 576
 pygame.display.set_caption('Танковый бой - Шея')
@@ -22,28 +18,13 @@ pygame.display.set_caption('Танковый бой - Шея')
 clock = pygame.time.Clock()
 allSprites = pygame.sprite.Group()
 
-### Настраиваем директории ###
-rootPath = os.path.dirname(__file__)
-resourcesPath = os.path.join(rootPath, "resources")
-
 ### Настраиваем пути текстур ###
-def getImage(name):
-    image = pygame.image.load(os.path.join(resourcesPath, name + ".png"))
-    return pygame.transform.scale(image, (cells["sub_size"], cells["sub_size"]))
-
-lime_box = getImage("lime_box")
-green_box = getImage("green_box")
-obstacle = getImage("obstacle")
-river = getImage("river")
+lime_box = getImage("boxes/1")
+green_box = getImage("boxes/2")
+full = getImage("boxes/full")
+river = getImage("boxes/river")
 
 ### Настраиваем шрифт ###
-font1 = pygame.font.SysFont('calibri', 36)
-
-testSurface = pygame.Surface(screen_size)
-
-screenScrollX = 0
-screenScrollY = 0
-
 sub_cells_amount = cells["amount"] * cells["size"] // cells["sub_size"]
 for i in range(0, sub_cells_amount):
     for j in range(0, sub_cells_amount):
@@ -57,63 +38,119 @@ for i in range(0, sub_cells_amount):
         allSprites.add(boxSprite)
 
 def mainMenu():
-    global motion
+    what_to_change = "obstacles"
     timer = 0
+    ten_timer = 0
     while True:
         clock.tick(60)
 
-        if timer < 100:
+        if timer < 10:
             timer += 1
         else:
+            if connection.connected:
+                for received in connection.receive():
+                    if received and received["action"]:
+                        match (received['action']):
+                            case "set_tanks":
+                                tanks.setList(received["tanks"])
+                            case "fire_feedback":
+                                obj = received["object"]
+                                match obj["name"]:
+                                    case "tank":
+                                        tanks.getByNumber(obj["team"], obj["number"]).kill_or_revive()
+                            case "move_tank":
+                                founded_tank = tanks.getByNumber(received["team"], received["number"])
+                                if founded_tank:
+                                    founded_tank.move(
+                                        CoordinatesObject().from_json(received["position"])
+                                    )
+            ten_timer += 1
             timer = 0
+
+        if ten_timer >= 10:
             arr = []
             for sprite in allSprites:
                 if sprite.custom_state != "empty":
-                    start_pos = [
-                        sprite.rect.x // cells["sub_size"], 
-                        sprite.rect.y // cells["sub_size"]
-                    ]
-                    end_pos = [
-                        start_pos[0] + cells["sub_size"] // cells["size"], 
-                        start_pos[1] + cells["sub_size"] // cells["size"], 
-                    ]
-                    arr.append({"positions": [start_pos, end_pos], "state": sprite.custom_state})
+                    position = {
+                        "x": sprite.rect.x // cells["sub_size"], 
+                        "y": sprite.rect.y // cells["sub_size"]
+                    }
+                    arr.append({"position": position, "type": sprite.custom_state})
             manager.update_field(arr)
+            ten_timer = 0
 
         screen.fill((0, 0, 0))
 
         posX, posY = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYUP:
-                motion = "stop"
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    x = (posX//cells["sub_size"])*cells["sub_size"]
-                    y = (posY//cells["sub_size"])*cells["sub_size"]
-                    for sprite in allSprites:
-                        if sprite.rect.x == x and sprite.rect.y == y:
-                            match (sprite.custom_state):
-                                case "empty":
-                                    sprite.custom_state = "obstacle"
-                                    sprite.image = obstacle
-                                    break
-                                case "obstacle":
-                                    sprite.custom_state = "river"
-                                    sprite.image = river
-                                    break
-                                case "river":
-                                    sprite.custom_state = "empty"
-                                    sprite.image = (lime_box if sprite.custom_type == "lime_box" else green_box)
-                                    break
-                            break
-                        
+            match (event.type):
+                case pygame.QUIT:
+                    connection.stop()
+                    pygame.quit()
+                    sys.exit()
+                case pygame.MOUSEBUTTONDOWN:
+                    x, y = posX//cells["sub_size"], posY//cells["sub_size"]
+                    match what_to_change:
+                        case "obstacles":
+                            if event.button == 1:
+                                x = x * cells["sub_size"]
+                                y = y * cells["sub_size"]
+                                for sprite in allSprites:
+                                    if sprite.rect.x == x and sprite.rect.y == y:
+                                        match (sprite.custom_state):
+                                            case "empty":
+                                                sprite.custom_state = "full"
+                                                sprite.image = full
+                                            case "full":
+                                                sprite.custom_state = "river"
+                                                sprite.image = river
+                                            case "river":
+                                                sprite.custom_state = "empty"
+                                                sprite.image = (lime_box if sprite.custom_type == "lime_box" else green_box)
+                                        break
+                        case "tanks":
+                            print(x, y)
+                            tank = tanks.foundTank(x, y)
+                            if tanks.active_tank:
+                                match event.button:
+                                    case 2:
+                                        tanks.active_tank.rotate()
+                            else:
+                                coords = CoordinatesObject(x,y)
+                                coords.angle = 360
+                                match event.button:
+                                    case 1: # ЛКМ
+                                        if tank:
+                                            tanks.active_tank = tank
+                                        else:
+                                            count = 0
+                                            for t in tanks.tank_list:
+                                                if t.team == "red":
+                                                    count += 1
+                                            tank = tanks.Tank("red", count, False)
+                                            tank.move(coords)
+                                    case 3: # ПКМ
+                                        if not tank:
+                                            count = 0
+                                            for t in tanks.tank_list:
+                                                if t.team == "blue":
+                                                    count += 1
+                                            tank = tanks.Tank("blue", count, False)
+                                            tank.move(coords)
+                case pygame.KEYDOWN:
+                    match event.key:
+                        case pygame.K_o:
+                            what_to_change = "obstacles"
+                        case pygame.K_t:
+                            what_to_change = "tanks"
+                    pass
+        
+        for dt in tanks.tank_list:
+            dt.draw(screen)
         allSprites.update()
         allSprites.draw(screen)
         pygame.display.flip()
 
-
-mainMenu()
+if __name__ == "__main__":
+    mainMenu()

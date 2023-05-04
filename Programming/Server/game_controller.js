@@ -2,7 +2,6 @@ const {getWithType} = require("./client")
 const Logger = require("./logger.js");
 const { getTanks, Tank, tank_list } = require("./tank");
 const { getObstacles, Obstacle, obstacles_list } = require("./obstacles");
-const { json } = require("express");
 
 let step_timer = -10;
 let pause = false;
@@ -28,9 +27,9 @@ async function start_game() {
     new Obstacle("full", 5, 5);
     new Obstacle("full", 4, 5);
     //////TO DELETE//////
-    step_timer = 30
-    await start_timer()
-    for (const client of getWithType("client")) {
+    let lst = getWithType("client")
+    lst.push(getWithType("manager"))
+    for (const client of lst) {
         client.step = (client.team == "red")
         client.send_data({
             "action": "set_tanks",
@@ -41,6 +40,8 @@ async function start_game() {
             "obstacles": getObstacles()
         })
     }
+    step_timer = 30
+    await start_timer()
     Logger.success('Игра успешно запущена!')
 }
 

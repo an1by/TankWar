@@ -1,4 +1,4 @@
-import tcpip
+from tcpip import connection
 
 last_obstacles = []
 
@@ -19,4 +19,4 @@ def update_field(new_obstacles):
             lobs.state = "empty"
             arr.append(lobs)
     last_obstacles = new_last_obstacles
-    tcpip.send_data({"command": "edit", "what": "obstacles", "list": arr})
+    connection.send({"command": "edit", "what": "obstacles", "list": arr})

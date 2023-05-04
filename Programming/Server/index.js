@@ -66,10 +66,10 @@ const server = net.createServer(async (socket) => {
                     switch (data["what"]) {
                         case "obstacles": {
                             data["list"].forEach(obs => {
-                                if (obs["positions"] && positions[0] && positions[1] && obs["type"]) {
-                                    const positions = obs["positions"]
+                                if (obs["position"] && obs["type"]) {
+                                    const position = obs["position"]
                                     const type = obs["type"]
-                                    let obstacle = getObstacleWithArray(positions);
+                                    let obstacle = getObstacle(position);
                                     
                                     if (obstacle) {
                                         if (type == "empty")
@@ -77,7 +77,7 @@ const server = net.createServer(async (socket) => {
                                         else 
                                             obstacle.type = type;
                                     }
-                                    else new Obstacle(type, positions[0], positions[1]);
+                                    else new Obstacle(type, position["x"], position["y"]);
                                 }
                             });
                         }
@@ -135,12 +135,30 @@ const server = net.createServer(async (socket) => {
                 }
                 case "step": {
                     switch (data["what"]) {
+                        case "dead_status": {
+                            const number = data["number"],
+                                team = data["team"]
+                            let tank = getTank(number, team);
+                            if (!tank)
+                                return;
+                            tank.dead = data["status"]
+                            client.broadcast_data("client", {
+                                "action": "fire_feedback",
+                                "object": {
+                                    "name": "tank",
+                                    "number": number,
+                                    "team": team
+                                },
+                                "message": `(Уничтожен танк №${number})`
+                            })
+                            break
+                        }
                         case "move": {
-                            if (!client || client.type !== "client")
+                            if (!client || client.type !== "client"|| client.type !== "manager")
                                 return
                             const number = data["number"],
                                 position = data["position"]
-                            let tank = getTank(number, client.team);
+                            let tank = "team" in data ? getTank(number, data["team"]) : getTank(number, client.team);
                             if (!tank)
                                 return;
                             if (position.x < 0 || position.y < 0) {
@@ -149,9 +167,11 @@ const server = net.createServer(async (socket) => {
                                 return;
                             }
                             tank.pre_move(position)
-                            pause_game(true)
-                            if (getWithType("controller").length > 0) {
-                                break
+                            if (client.type === "client") {
+                                pause_game(true)
+                                if (getWithType("controller").length > 0) {
+                                    break
+                                }
                             }
                         }
                         case "final_move": {
@@ -172,7 +192,15 @@ const server = net.createServer(async (socket) => {
                                     "number": tank.number,
                                     "position": tank.position
                                 })
-                                pause_game(false)
+                                if (client.type === "client") {
+                                    client.broadcast_data("manager", { //MANAGER
+                                        "action": "move_tank",
+                                        "team": client.team,
+                                        "number": tank.number,
+                                        "position": tank.position
+                                    })
+                                    pause_game(false)
+                                }
                             } else {
                                 Logger.error(`Танк с предварительной позицией для передвижения не найден!`)
                             }
@@ -210,6 +238,7 @@ const server = net.createServer(async (socket) => {
                                 Logger.info(`Танк №${tank.number} из команды ${tank.team} выстрелил! ${result.message}`)
                                 client.send_data(result)
                                 client.broadcast_data("client", result)
+                                client.broadcast_data("manager", result) //MANAGER
                                 pause_game(false)
 
                                 let dead_counter = [0, 0]

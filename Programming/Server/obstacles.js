@@ -33,7 +33,7 @@ function getObstacles() {
 
 function getObstacle(position) {
     for (let obstacle of obstacles_list) {
-        if (obstacle.position.x == position.x && obstacle.position.y == position.y)
+        if (obstacle.position.x == position["x"] && obstacle.position.y == position["y"])
             return obstacle;
     }
     return undefined;
