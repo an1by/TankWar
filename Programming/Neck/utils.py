@@ -4,13 +4,12 @@ resourcesPath = os.path.join(rootPath, "resources")
 
 cells = {
     "size": 64,
-    "sub_size": 64,
     "amount": 8
 }
 
 def getImage(name):
-    image = pygame.image.load(os.path.join(resourcesPath, name + ".png"))
-    return pygame.transform.scale(image, (cells["sub_size"], cells["sub_size"]))
+    image = pygame.image.load("./resources/" + name + ".png").convert_alpha()
+    return pygame.transform.scale(image, (cells["size"], cells["size"]))
 
 def is_empty(data):
     return data == {} or data == None or data == ''

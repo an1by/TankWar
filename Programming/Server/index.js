@@ -4,11 +4,12 @@ require('dotenv').config()
 
 const net = require('net');
 const Logger = require("./logger.js");
-const {createAddress, createPosition, arrayToPosition, getAngle} = require("./utils.js");
-let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
-let {isObstacle, Obstacle, obstacles_list, getObstacle, getObstacles} = require("./obstacles.js");
-let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
-let {start_game, send_time, pause_game, pause, end_game} = require("./game_controller.js")
+const {createAddress} = require("./utils.js");
+let {Tank, getTank, tank_list} = require("./tank.js");
+let {Obstacle, obstacles_list, getObstacle, getObstacles} = require("./obstacles.js");
+let {Client, client_list, getWithType, countClientType} = require("./client.js")
+let {start_game, pause_game, pause, end_game} = require("./game_controller.js");
+const { setUrl } = require('./http_server.js');
 
 let raspberry = undefined;
 
@@ -30,6 +31,9 @@ const server = net.createServer(async (socket) => {
             let data = JSON.parse(recv);
             console.log(data)
             switch (data["command"]) {
+                case "camera": {
+                    setUrl(data["data"])
+                }
                 case "log": {
                     console.log(data["message"])
                     break

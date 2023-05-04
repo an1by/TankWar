@@ -42,8 +42,10 @@ async function start_game() {
 }
 
 function end_game(winner=undefined) {
-    tank_list.forEach(tank => tank.disconnect())
-    obstacles_list.forEach(obstacle => obstacle.delete())
+    // tank_list.forEach(tank => tank.disconnect())
+    // obstacles_list.forEach(obstacle => obstacle.delete())
+    tank_list = []
+    obstacles_list = []
     ////////////////////
     step_timer = -10
     for (const client of getWithType("client")) {

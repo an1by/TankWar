@@ -32,8 +32,7 @@ class Tank(object):
         self.number = number
         self.dead = dead
 
-        path = (green_tank if team == "red" else yellow_tank)["alive"]
-        self.original_image = pygame.transform.scale(path, (cells["size"], cells["size"]))
+        self.original_image =  (green_tank if team == "red" else yellow_tank)["alive"]
         self.image = self.original_image
 
         self.position = CoordinatesObject(0, 0)
@@ -44,9 +43,8 @@ class Tank(object):
         Функция для инициализации убийства танка
         """
         self.dead = not self.dead
-        path = (green_tank if self.team == "red" else yellow_tank)["dead" if self.dead else "alive"]
+        self.original_image =  (green_tank if self.team == "red" else yellow_tank)["dead" if self.dead else "alive"]
 
-        self.original_image = pygame.transform.scale(path, (cells["size"], cells["size"]))
         self.image = self.original_image
         self.rotate(self.position.angle)
         connection.send({
