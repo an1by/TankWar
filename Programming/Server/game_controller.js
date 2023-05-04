@@ -19,14 +19,6 @@ async function start_game() {
         t.position.angle = (team == "red" ? 270 : 90)
     }
     //////TO DELETE//////
-    new Obstacle("river", 2, 3);
-    new Obstacle("river", 2, 4);
-    new Obstacle("river", 3, 5);
-    new Obstacle("river", 4, 6);
-    new Obstacle("full", 5, 4);
-    new Obstacle("full", 5, 5);
-    new Obstacle("full", 4, 5);
-    //////TO DELETE//////
     for (const client of getWithType("client")) {
         client.step = (client.team == "red")
         client.send_data({

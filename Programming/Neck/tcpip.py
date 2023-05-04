@@ -44,3 +44,4 @@ class ServerConnection(object):
 
 connection = ServerConnection()
 connection.connect('play.aniby.net', 3030)
+connection.init()
