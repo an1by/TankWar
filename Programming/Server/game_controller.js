@@ -1,7 +1,8 @@
 const {getWithType} = require("./client")
 const Logger = require("./logger.js");
 const { getTanks, Tank, tank_list } = require("./tank");
-const { getObstacles, Obstacle, obstacles_list } = require("./obstacles")
+const { getObstacles, Obstacle, obstacles_list } = require("./obstacles");
+const { json } = require("express");
 
 let step_timer = -10;
 let pause = false;
@@ -43,18 +44,21 @@ async function start_game() {
     Logger.success('Игра успешно запущена!')
 }
 
-function end_game() {
+function end_game(winner=undefined) {
     tank_list.forEach(tank => tank.disconnect())
     obstacles_list.forEach(obstacle => obstacle.delete())
     ////////////////////
     step_timer = -10
     for (const client of getWithType("client")) {
         client.step = "none"
-        client.send_data({
+        json = {
             "action": "step_feedback",
             "time": -10,
             "step": "none"
-        })
+        }
+        if (winner)
+            json["winner"] = winner
+        client.send_data(json)
     }
     Logger.success('Игра успещно завершена!')
 }

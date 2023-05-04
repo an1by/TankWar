@@ -8,7 +8,7 @@ const {createAddress, createPosition, arrayToPosition, getAngle} = require("./ut
 let {Tank, getTank, getTankByPosition, tank_list, getTankByAddress} = require("./tank.js");
 let {isObstacle, Obstacle, obstacles_list, getObstacle} = require("./obstacles.js");
 let {Client, client_list, getClient, getWithType, countClientType} = require("./client.js")
-let {start_game, send_time, pause_game, pause} = require("./game_controller.js")
+let {start_game, send_time, pause_game, pause, end_game} = require("./game_controller.js")
 
 let raspberry = undefined;
 
@@ -173,6 +173,17 @@ const server = net.createServer(async (socket) => {
                                     "position": tank.position
                                 })
                                 pause_game(false)
+                                let dead_counter = [0, 0]
+                                let all_counter = [0, 0]
+                                tank_list.forEach((tank) => {
+                                    all_counter[(tank.team == "red") ? 0 : 1] += 1
+                                    if (tank.dead)
+                                        dead_counter[(tank.team == "red") ? 0 : 1] += 1
+                                })
+                                if (dead_counter[0] == all_counter[0])
+                                    end_game("blue")
+                                else if (dead_counter[1] == all_counter[1])
+                                    end_game("red")
                             } else {
                                 Logger.error(`Танк с предварительной позицией для передвижения не найден!`)
                             }

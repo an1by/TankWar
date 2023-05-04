@@ -105,6 +105,8 @@ class Tank(object):
         """
         if self.dead:
             return False
+        if position.x < 0 or position.y < 0:
+            return False
         moving = abs(self.position.x - position.x) + abs(self.position.y - position.y)
         if moving == 1:
             if obstacles.foundObstacle(position):

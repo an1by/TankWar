@@ -72,6 +72,9 @@ def main():
     game_status = "menu" # menu / game / settings / server_select
     # global servers_buttons
     current_step = None # True: step / False: waiting / None: waiting in game start
+
+    game_winner = None
+
     not_available = {
         "timer": 0,
         "text": ""
@@ -104,10 +107,16 @@ def main():
                 if received and received["action"]:
                     match (received['action']):
                         case "step_feedback":
-                            current_step = None if received['step'] == "none" else received['step']
-                            if received["step"] == "none" or not received["step"]:
+                            match received['step']:
+                                case "none":
+                                    current_step = None
+                                case _:
+                                    current_step = received["step"]
+                            if not current_step:
                                 current_choose = ""
                             step_time = received['time']
+                            if 'winner' in received:
+                                game_winner = 'winner'
                         case "init":
                             team = received["team"]
                             if team == "blue":
@@ -184,7 +193,7 @@ def main():
                         if tanks.active_tank:
                             match (current_choose):
                                 case "move":
-                                    if tanks.active_tank.can_move(position):
+                                    if tanks.active_tank.can_move(position) and temp_position == None:
                                         temp_position = position
                                         current_choose = "rotate"
                                 case "fire":
@@ -208,53 +217,73 @@ def main():
             case "game":
                 # Фон\
                 screen.fill((108, 108, 108))
-                # Размеры
-                sb_w = razdiscell[0]
-                sb_h = cells["size"] * 0.5
-                # Обводка
-                pygame.draw.rect(screen, (65, 65, 65), (sb_w - 20, sb_h - 20, sb_w + all_cells_size//2.29 , sb_h + all_cells_size * 0.988))
-                # Применение игрового канваса
-                screen.blit(game_canvas, (sb_w, sb_h))
-                # Отрисовка квадратов
-                allSprites.draw(game_canvas)
-                # Отрисовка препятсвтий
-                for obstacle in obstacles.obstacle_list:
-                    obstacle.draw(game_canvas)
-                # Отрисовка танков
-                for tank in tanks.tank_list:
-                    tank.draw(game_canvas, current_choose)
-                
-                if current_step != None:
-                    display_pos = (screen_size[0] * 0.89, screen_size[1] * 0.83)
-                    current_color = colors["me"] if current_step == True else colors["enemy"]
-                    pygame.draw.circle(screen, current_color, display_pos, 130, 30)
-                    utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
+                if game_winner:
+                    utils.draw_text(screen, f'Выиграла команда {"Зеленых" if game_winner == "red" else "Желтых"}', 0, 0, orientation="center", font=calibri_font)
+                    pass
+                else:
+                    # Размеры
+                    sb_w = razdiscell[0]
+                    sb_h = cells["size"] * 0.5
+                    # Обводка
+                    pygame.draw.rect(screen, (65, 65, 65), (sb_w - 20, sb_h - 20, sb_w + all_cells_size//2.29 , sb_h + all_cells_size * 0.988))
+                    # Применение игрового канваса
+                    screen.blit(game_canvas, (sb_w, sb_h))
+                    # Отрисовка квадратов
+                    allSprites.draw(game_canvas)
+                    # Отрисовка препятсвтий
+                    for obstacle in obstacles.obstacle_list:
+                        obstacle.draw(game_canvas)
+                    # Отрисовка танков
+                    for tank in tanks.tank_list:
+                        tank.draw(game_canvas, current_choose)
 
-                    if current_step == True and tanks.active_tank and not pause:
-                        match current_choose:
-                            case "move" | "fire":
-                                if game_buttons["fire_move"].draw(screen):
-                                    current_choose = "move" if current_choose == "fire" else "fire"
-                                    game_buttons["fire_move"].switch()
-                            case "rotate":
-                                for key in game_buttons["moving"].keys():
-                                    if game_buttons["moving"][key].draw(screen):
-                                        angle = 0
-                                        match (key):
-                                            case "up":
-                                                angle = 90
-                                            case "right":
-                                                angle = 360
-                                            case "down":
-                                                angle = 270
-                                            case "left":
-                                                angle = 180
-                                        if current_choose == "rotate" and temp_position != None:
-                                            temp_position.angle = angle
-                                            tanks.active_tank.move_and_send(temp_position)
-                                            temp_position = None
-                                            tanks.active_tank = None
-                                            current_step = False
+                    if current_step != None:
+                        display_pos = (screen_size[0] * 0.89, screen_size[1] * 0.83)
+                        current_color = colors["me"] if current_step == True else colors["enemy"]
+                        pygame.draw.circle(screen, current_color, display_pos, 130, 30)
+                        utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
+
+                        if current_step == True and tanks.active_tank and not pause:
+                            match current_choose:
+                                case "move" | "fire":
+                                    if game_buttons["fire_move"].draw(screen):
+                                        current_choose = "move" if current_choose == "fire" else "fire"
+                                        game_buttons["fire_move"].switch()
+                                case "rotate":
+                                    for key in game_buttons["moving"].keys():
+                                        if game_buttons["moving"][key].draw(screen):
+                                            angle = 0
+                                            match (key):
+                                                case "up":
+                                                    angle = 90
+                                                case "right":
+                                                    angle = 360
+                                                case "down":
+                                                    angle = 270
+                                                case "left":
+                                                    angle = 180
+                                            if temp_position != None:
+                                                temp_position.angle = angle
+                                                tanks.active_tank.move_and_send(temp_position)
+                                                temp_position = None
+                                                tanks.active_tank = None
+                                                current_step = False
+                                case "move":
+                                    for key in game_buttons["moving"].keys():
+                                        if game_buttons["moving"][key].draw(screen):
+                                            position = tanks.active_tank.position
+                                            match (key):
+                                                case "up":
+                                                    position.y += -1
+                                                case "right":
+                                                    position.x += 1
+                                                case "down":
+                                                    position.y += 1
+                                                case "left":
+                                                    position.x += -1
+                                            if tanks.active_tank.can_move(position) and temp_position == None:
+                                                temp_position = position
+                                                current_choose = "rotate"
 
             case "menu":
                 screen.blit(main_canvas, (0, 0))
