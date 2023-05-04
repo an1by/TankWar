@@ -210,7 +210,6 @@ const server = net.createServer(async (socket) => {
                                 Logger.info(`Танк №${tank.number} из команды ${tank.team} выстрелил! ${result.message}`)
                                 client.send_data(result)
                                 client.broadcast_data("client", result)
-                                // send_time(change_step=true)
                                 pause_game(false)
                             } else {
                                 Logger.error(`Танк с предварительной целью для атаки не найден!`)

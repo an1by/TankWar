@@ -62,16 +62,14 @@ function end_game() {
 function pause_game(status) {
     pause = status
     if (pause)
-        send_time(false, "pause")
-    else
-        send_time(true, "nonpause")
+        change_step("pause")
+    else {
+        step_timer = -1
+        change_step("nonpause")
+    }
 }
 
-function send_time(change_step=false, step=undefined) {
-    if (getWithType("client").length !== 2) {
-        end_game()
-        return
-    }
+function change_step(step) {
     for (let client of getWithType("client")) {
         switch (step) {
             case "pause":
@@ -86,12 +84,22 @@ function send_time(change_step=false, step=undefined) {
                     client.step = step
                 break
         }
+    }
+}
+
+function send_time(change_step=false) {
+    if (getWithType("client").length !== 2) {
+        end_game()
+        return
+    }
+    if (change_step)
+        step_timer = 30
+    for (let client of getWithType("client")) {
         if (change_step) {
             switch (client.step) {
                 case true | false:
                     client.step = !client.step
             }
-            step_timer = 30
         }
         client.send_data({
             "action": "step_feedback",
@@ -103,18 +111,17 @@ function send_time(change_step=false, step=undefined) {
 
 async function start_timer() {
     let id = setInterval(() => {
-        if (pause) {
-            
-        } else if (step_timer > 0) {
-            step_timer -= 1
-            send_time()
-        } else if (step_timer == -10) {
-            end_game()
-            clearInterval(id)
-            return
-        } else {
-            step_timer = 30
-            send_time(true)
+        if (!pause) {
+            if (step_timer > 0) {
+                step_timer -= 1
+                send_time()
+            } else if (step_timer <= -10) {
+                end_game()
+                clearInterval(id)
+                return
+            } else {
+                send_time(true)
+            }
         }
     }, 1000)
 }
