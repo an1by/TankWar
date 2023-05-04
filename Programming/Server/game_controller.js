@@ -27,9 +27,7 @@ async function start_game() {
     new Obstacle("full", 5, 5);
     new Obstacle("full", 4, 5);
     //////TO DELETE//////
-    let lst = getWithType("client")
-    lst.push(getWithType("manager"))
-    for (const client of lst) {
+    for (const client of getWithType("client")) {
         client.step = (client.team == "red")
         client.send_data({
             "action": "set_tanks",
@@ -40,6 +38,12 @@ async function start_game() {
             "obstacles": getObstacles()
         })
     }
+    getWithType("manager").forEach(cl => {
+        cl.send_data({
+            "action": "set_tanks",
+            "tanks": getTanks()
+        })
+    })
     step_timer = 30
     await start_timer()
     Logger.success('Игра успешно запущена!')

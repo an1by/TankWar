@@ -23,6 +23,7 @@ class Obstacle(object):
         surface.blit(self.image, (self.position.x  * cells["size"], self.position.y * cells["size"]))
 
 def setList(obstacles):
+    obstacle_list = []
     for obstacle in obstacles:
         Obstacle(
             CoordinatesObject().from_json(obstacle["position"]),
