@@ -1,34 +1,45 @@
-import socket, json, time, select
+import socket, json, select
 import re
 from utils import is_empty
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# data: json
-def send_data(data):
-    s.sendall(bytes(json.dumps(data) ,encoding="utf-8"))
+class ServerConnection(object):
+    def __init__(self):
+        self.connected = False
 
-def get_data():
-    to_return = []
-    ready = select.select([s], [], [], 0.1)
-    if ready[0] and s.getsockname()[1] != 0:
-        received = s.recv(2**20)
-        if received:
-            received = received.decode('utf-8')
-            r = re.split('(\{.*?\})(?= *\{)', received)
-            to_return = [json.loads(x) for x in r if not is_empty(x)]
-    return to_return
+    def connect(self, address, port):
+        if self.connected:
+            return
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.connect((address, port))
+        self.socket.setblocking(0)
+        self.connected = True
+        print(f'Connected to {address}:{port}')
 
-def connect(address, port):
-    s.connect((address, port))
-    print(f'Connected to {address}:{port}')
-    s.setblocking(0)
+    def init(self):
+        self.send({"command":"init", "who": "client"})
 
-def connect_default():
-    connect('play.aniby.net', 3030)
+    def send(self, data):
+        self.socket.sendall(bytes(json.dumps(data) ,encoding="utf-8"))
 
-def init():
-    send_data({"command":"init", "who": "client"})
+    def receive(self):
+        to_return = []
+        if self.connected:
+            ready = select.select([self.socket], [], [], 0.1)
+            if ready[0] and self.socket.getsockname()[1] != 0:
+                received = self.socket.recv(2**20)
+                if received:
+                    received = received.decode('utf-8')
+                    r = re.split('(\{.*?\})(?= *\{)', received)
+                    to_return = [json.loads(x) for x in r if not is_empty(x)]
+        return to_return
 
-def stop():
-    s.close()
+    def stop(self):
+        if not self.connected:
+            return
+        self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
+        self.connected = False
+
+connection = ServerConnection()

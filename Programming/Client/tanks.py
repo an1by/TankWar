@@ -1,7 +1,8 @@
 import pygame
 from storage import settings_buttons
 from utils import CoordinatesObject, cells, getImage
-import tcpip, obstacles
+import obstacles
+from tcpip import connection
 
 green_tank = {
     "alive": getImage('tanks/green'),
@@ -66,7 +67,7 @@ class Tank(object):
         Выполняет передвижение танка и отправляет запрос на сервер при удачной проверке
         """
         if self.move(position):
-            tcpip.send_data({
+            connection.send({
                 "command": "step",
                 "what": "move",
                 "number": self.number,
@@ -188,7 +189,7 @@ class Tank(object):
         Выполняет выстрел и отправляет запрос на сервер при удачной проверке
         """
         if self.can_fire(position):
-            tcpip.send_data({
+            connection.send({
                 "command": "step",
                 "what": "fire",
                 "number": self.number,

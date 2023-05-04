@@ -103,7 +103,7 @@ function change_step(step) {
 
 function send_time(change_step=false) {
     if (getWithType("client").length !== 2) {
-        end_game()
+        step_timer = -10
         return
     }
     if (change_step)

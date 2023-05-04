@@ -20,7 +20,7 @@ from storage import *
 
 ### Инициализация моих импортов ###
 from utils import CoordinatesObject, cells
-import tcpip
+from tcpip import connection
 import utils
 import tanks
 import obstacles
@@ -102,50 +102,50 @@ def main():
         if timer < 10:
             timer += 1
         else:
-            for received in tcpip.get_data():
-                print(received)
-                if received and received["action"]:
-                    match (received['action']):
-                        case "step_feedback":
-                            match received['step']:
-                                case "none":
-                                    current_step = None
-                                case _:
-                                    current_step = received["step"]
-                            if not current_step:
-                                current_choose = ""
-                            step_time = received['time']
-                            if 'winner' in received:
-                                game_winner = received['winner']
-                        case "init":
-                            team = received["team"]
-                            if team == "blue":
-                                colors["me"], colors["enemy"] = colors["enemy"], colors["me"]
-                        case "set_tanks":
-                            tanks.setList(received["tanks"])
-                        case "set_obstacles":
-                            obstacles.setList(received["obstacles"])
-                        case "fire_feedback":
-                            obj = received["object"]
-                            match obj["name"]:
-                                case "none":
-                                    pass
-                                case "obstacle":
-                                    pass
-                                case "tank":
-                                    tanks.getByNumber(obj["team"], obj["number"]).kill()
-                        case "switch_pause":
-                            pause = received["pause"]
-                            if pause:
-                                tanks.active_tank = None
-                                temp_position = None
-                                current_choose = ""
-                        case "move_tank":
-                            founded_tank = tanks.getByNumber(received["team"], received["number"])
-                            if founded_tank:
-                                founded_tank.move(
-                                    CoordinatesObject().from_json(received["position"])
-                                )
+            if connection.connected:
+                for received in connection.receive():
+                    if received and received["action"]:
+                        match (received['action']):
+                            case "step_feedback":
+                                match received['step']:
+                                    case "none":
+                                        current_step = None
+                                    case _:
+                                        current_step = received["step"]
+                                if not current_step:
+                                    current_choose = ""
+                                step_time = received['time']
+                                if 'winner' in received:
+                                    game_winner = received['winner']
+                            case "init":
+                                team = received["team"]
+                                if team == "blue":
+                                    colors["me"], colors["enemy"] = colors["enemy"], colors["me"]
+                            case "set_tanks":
+                                tanks.setList(received["tanks"])
+                            case "set_obstacles":
+                                obstacles.setList(received["obstacles"])
+                            case "fire_feedback":
+                                obj = received["object"]
+                                match obj["name"]:
+                                    case "none":
+                                        pass
+                                    case "obstacle":
+                                        pass
+                                    case "tank":
+                                        tanks.getByNumber(obj["team"], obj["number"]).kill()
+                            case "switch_pause":
+                                pause = received["pause"]
+                                if pause:
+                                    tanks.active_tank = None
+                                    temp_position = None
+                                    current_choose = ""
+                            case "move_tank":
+                                founded_tank = tanks.getByNumber(received["team"], received["number"])
+                                if founded_tank:
+                                    founded_tank.move(
+                                        CoordinatesObject().from_json(received["position"])
+                                    )
             timer = 0
             #updateField()
         # Events Handler
@@ -219,7 +219,7 @@ def main():
                 screen.fill((108, 108, 108))
                 if game_winner:
                     utils.draw_text(screen, f'Выиграла команда {"Зеленых" if game_winner == "red" else "Желтых"}', 0, 0, orientation="center", font=calibri_font)
-                    pass
+                    connection.stop()
                 else:
                     # Размеры
                     sb_w = razdiscell[0]
@@ -337,8 +337,8 @@ def main():
                     if server_button.draw(server_select_canvas, (timer == 0)):
                         #game_status = "game"
                         if server_button.available():
-                            tcpip.connect(server_button.server["address"], server_button.server["port"])
-                            tcpip.init()
+                            connection.connect(server_button.server["address"], server_button.server["port"])
+                            connection.init()
                             game_status = "game"
                         elif "not_available" in server_button.server:
                             not_available["timer"] = 100
@@ -360,6 +360,10 @@ def main():
             case "game":
                 if up_buttons["back"].draw(screen):
                     game_status = "server_select"
+                    game_winner = None
+                    tanks.tank_list = []
+                    obstacles.obstacle_list = []
+                    connection.stop()
         pygame.display.flip()
         received = None
 
