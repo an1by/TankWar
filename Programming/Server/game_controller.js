@@ -29,7 +29,7 @@ async function start_game() {
     //////TO DELETE//////
     step_timer = 30
     await start_timer()
-    for (let client of getWithType("client")) {
+    for (const client of getWithType("client")) {
         client.step = (client.team == "red")
         client.send_data({
             "action": "set_tanks",
@@ -48,7 +48,7 @@ function end_game() {
     obstacles_list.forEach(obstacle => obstacle.delete())
     ////////////////////
     step_timer = -10
-    for (let client of getWithType("client")) {
+    for (const client of getWithType("client")) {
         client.step = "none"
         client.send_data({
             "action": "step_feedback",
@@ -70,7 +70,7 @@ function pause_game(status) {
 }
 
 function change_step(step) {
-    for (let client of getWithType("client")) {
+    for (const client of getWithType("client")) {
         switch (step) {
             case "pause":
                 client.send_data({
@@ -104,12 +104,15 @@ function send_time(change_step=false) {
     }
     if (change_step)
         step_timer = 30
-    for (let client of getWithType("client")) {
+    for (const client of getWithType("client")) {
         if (change_step) {
+            // console.log(client.step)
             switch (client.step) {
-                case true | false:
+                case true:
+                case false:
                     client.step = !client.step
             }
+            // console.log(client.step)
         }
         client.send_data({
             "action": "step_feedback",

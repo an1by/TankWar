@@ -230,7 +230,7 @@ def main():
                     pygame.draw.circle(screen, current_color, display_pos, 130, 30)
                     utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
 
-                    if current_step == True and tanks.active_tank and not pass:
+                    if current_step == True and tanks.active_tank and not pause:
                         match current_choose:
                             case "move" | "fire":
                                 if game_buttons["fire_move"].draw(screen):
