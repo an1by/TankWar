@@ -180,6 +180,7 @@ const server = net.createServer(async (socket) => {
                                     if (tank.dead)
                                         dead_counter[(tank.team == "red") ? 0 : 1] += 1
                                 })
+                                console.log(dead_counter, all_counter)
                                 if (dead_counter[0] == all_counter[0])
                                     end_game("blue")
                                 else if (dead_counter[1] == all_counter[1])

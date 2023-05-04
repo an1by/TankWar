@@ -16,7 +16,7 @@ async function start_game() {
             number -= 3
         const t = new Tank(number, team, undefined)
         t.position.x = i;
-        t.position.y = (team == "red" ? 0 : 7)
+        t.position.y = (team == "red" ? 0 : 1)
         t.position.angle = (team == "red" ? 270 : 90)
     }
     //////TO DELETE//////
