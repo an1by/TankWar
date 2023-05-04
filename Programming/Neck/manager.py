@@ -4,19 +4,28 @@ last_obstacles = []
 
 def update_field(new_obstacles):
     global last_obstacles
-    new_last_obstacles = []
     arr = []
+
     for lobs in last_obstacles:
         found = False
         for nobs in new_obstacles:
-            if lobs["positions"] == nobs["positions"]:
+            if nobs["position"] == lobs["position"]:
                 found = True
-                if lobs["state"] != nobs["state"]:
+                if lobs["type"] != nobs["type"]:
                     arr.append(nobs)
-                    new_last_obstacles.append(nobs)
                 break
         if not found:
-            lobs.state = "empty"
+            lobs["type"] = "empty"
             arr.append(lobs)
-    last_obstacles = new_last_obstacles
+
+    for nobs in new_obstacles: # на совпадение
+        found = False
+        for aobs in arr:
+            if aobs["position"] == nobs["position"]:
+                found = True
+                break
+        if not found:
+            arr.append(nobs)
+        
+    last_obstacles = new_obstacles
     connection.send({"command": "edit", "what": "obstacles", "list": arr})

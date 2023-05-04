@@ -8,6 +8,7 @@ pygame.mixer.init()
 
 ###
 from utils import *
+from maps import map_list
 from tcpip import connection
 import tanks
 screen_size = (cells["size"] * cells["amount"], cells["size"] * cells["amount"])
@@ -34,7 +35,7 @@ for i in range(0, sub_cells_amount):
         boxSprite.rect.x = i*cells["sub_size"]
         boxSprite.rect.y = j*cells["sub_size"]
         boxSprite.custom_type = ("lime_box" if j%2 == i%2 else "green_box")
-        boxSprite.custom_state = "empty"
+        boxSprite.custom_type = "empty"
         allSprites.add(boxSprite)
 
 def mainMenu():
@@ -43,6 +44,7 @@ def mainMenu():
     ten_timer = 0
     while True:
         clock.tick(60)
+        to_update = []
 
         if timer < 10:
             timer += 1
@@ -68,15 +70,14 @@ def mainMenu():
             timer = 0
 
         if ten_timer >= 10:
-            arr = []
             for sprite in allSprites:
-                if sprite.custom_state != "empty":
+                if sprite.custom_type != "empty":
                     position = {
                         "x": sprite.rect.x // cells["sub_size"], 
                         "y": sprite.rect.y // cells["sub_size"]
                     }
-                    arr.append({"position": position, "type": sprite.custom_state})
-            manager.update_field(arr)
+                    to_update.append({"position": position, "type": sprite.custom_type})
+            manager.update_field(to_update)
             ten_timer = 0
 
         screen.fill((0, 0, 0))
@@ -98,15 +99,15 @@ def mainMenu():
                                 y = y * cells["sub_size"]
                                 for sprite in allSprites:
                                     if sprite.rect.x == x and sprite.rect.y == y:
-                                        match (sprite.custom_state):
+                                        match (sprite.custom_type):
                                             case "empty":
-                                                sprite.custom_state = "full"
+                                                sprite.custom_type = "full"
                                                 sprite.image = full
                                             case "full":
-                                                sprite.custom_state = "river"
+                                                sprite.custom_type = "river"
                                                 sprite.image = river
                                             case "river":
-                                                sprite.custom_state = "empty"
+                                                sprite.custom_type = "empty"
                                                 sprite.image = (lime_box if sprite.custom_type == "lime_box" else green_box)
                                         break
                         case "tanks":
@@ -144,7 +145,30 @@ def mainMenu():
                             what_to_change = "obstacles"
                         case pygame.K_t:
                             what_to_change = "tanks"
-                    pass
+                    if what_to_change == "obstacles":
+                        map = None
+                        match event.key:
+                            case pygame.K_1:
+                                map = map_list[0]
+                            case pygame.K_2:
+                                map = map_list[1]
+                            case pygame.K_3:
+                                map = map_list[2]
+                        if map:
+                            for sprite in allSprites:
+                                x = sprite.rect.x // cells["sub_size"]
+                                y = sprite.rect.y // cells["sub_size"]
+                                sprite.image = (lime_box if x%2 == y%2 else green_box)
+                                sprite.custom_type = "empty"
+                                for obs in map:
+                                    if x == obs["position"]["x"] and y == obs["position"]["y"]:
+                                        match (obs["type"]):
+                                            case "full":
+                                                sprite.custom_type = "full"
+                                                sprite.image = full
+                                            case "river":
+                                                sprite.custom_type = "river"
+                                                sprite.image = river
         
         for dt in tanks.tank_list:
             dt.draw(screen)
