@@ -1,6 +1,4 @@
-import os, pygame
-rootPath = os.path.dirname(__file__)
-resourcesPath = os.path.join(rootPath, "resources")
+import pygame
 
 cells = {
     "size": 64,

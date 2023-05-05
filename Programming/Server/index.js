@@ -9,7 +9,7 @@ let {Tank, getTank, tank_list} = require("./tank.js");
 let {Obstacle, obstacles_list, getObstacle, getObstacles} = require("./obstacles.js");
 let {Client, client_list, getWithType, countClientType} = require("./client.js")
 let {start_game, pause_game, pause, end_game} = require("./game_controller.js");
-const { setUrl } = require('./http_server.js');
+// const { setUrl } = require('./http_server.js');
 
 let raspberry = undefined;
 
@@ -33,9 +33,9 @@ const server = net.createServer(async (socket) => {
             } else {
                 let data = JSON.parse(recv);
                 switch (data["command"]) {
-                    case "camera": {
-                        setUrl(data["data"])
-                    }
+                    // case "camera": {
+                    //     setUrl(data["data"])
+                    // }
                     case "log": {
                         console.log(data["message"])
                         break

@@ -1,6 +1,5 @@
 import pygame
 from utils import *
-from tcpip import connection
 
 green_tank = {
     "alive": getImage('tanks/green'),
@@ -47,13 +46,6 @@ class Tank(object):
 
         self.image = self.original_image
         self.rotate(self.position.angle)
-        connection.send({
-            "command": "step",
-            "what": "dead_status",
-            "status": self.dead,
-            "number": self.number,
-            "team": self.team
-        })
 
     def set_position(self, position: CoordinatesObject):
         self.position = position
@@ -65,15 +57,6 @@ class Tank(object):
             position.angle = 90
 
         self.position = position
-        
-        connection.send({
-            "command": "step",
-            "what": "move",
-            "team": self.team,
-            "number": self.number,
-            "position": self.position.to_json()
-        })
-
     
     def rotate(self):
         self.move(self.position.x, self.position.y, self.position.angle + 90)

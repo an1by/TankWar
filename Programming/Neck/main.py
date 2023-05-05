@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-import sys
 import manager
 
 cells = {
@@ -22,7 +21,14 @@ allSprites = pygame.sprite.Group()
 ###
 from utils import *
 from maps import map_list
+
+import sys
+sys.path.insert(1, '../Libraries')
+
 from tcpip import connection
+connection.connect('play.aniby.net', 3030)
+connection.init("manager")
+
 import tanks
 
 
@@ -66,13 +72,29 @@ def mainMenu():
                                 obj = received["object"]
                                 match obj["name"]:
                                     case "tank":
-                                        tanks.getByNumber(obj["team"], obj["number"]).kill_or_revive()
+                                        founded_tank = tanks.getByNumber(obj["team"], obj["number"])
+                                        if founded_tank:
+                                            founded_tank.kill_or_revive()
+                                            connection.send({
+                                                "command": "step",
+                                                "what": "dead_status",
+                                                "status": self.dead,
+                                                "number": self.number,
+                                                "team": self.team
+                                            })
                             case "move_tank":
                                 founded_tank = tanks.getByNumber(received["team"], received["number"])
                                 if founded_tank:
                                     founded_tank.move(
                                         CoordinatesObject().from_json(received["position"])
                                     )
+                                    connection.send({
+                                        "command": "step",
+                                        "what": "move",
+                                        "team": founded_tank.team,
+                                        "number": founded_tank.number,
+                                        "position": founded_tank.position.to_json()
+                                    })
             ten_timer += 1
             timer = 0
 
