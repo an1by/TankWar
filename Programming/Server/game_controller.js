@@ -19,8 +19,17 @@ async function start_game() {
         t.position.angle = (team == "red" ? 270 : 90)
     }
     //////TO DELETE//////
-    for (const client of getWithType("client")) {
-        client.step = (client.team == "red")
+    send_field_setup("client")
+    send_field_setup("manager")
+    step_timer = 30
+    await start_timer()
+    Logger.success('Игра успешно запущена!')
+}
+
+function send_field_setup(who) {
+    for (const client of getWithType(who)) {
+        if (who == "client")
+            client.step = (client.team == "red")
         client.send_data({
             "action": "set_tanks",
             "tanks": getTanks()
@@ -30,15 +39,6 @@ async function start_game() {
             "obstacles": getObstacles()
         })
     }
-    getWithType("manager").forEach(cl => {
-        cl.send_data({
-            "action": "set_tanks",
-            "tanks": getTanks()
-        })
-    })
-    step_timer = 30
-    await start_timer()
-    Logger.success('Игра успешно запущена!')
 }
 
 function end_game(winner=undefined) {
@@ -143,5 +143,5 @@ async function start_timer() {
 }
 
 module.exports = {
-    start_timer, start_game, end_game, send_time, pause_game
+    start_timer, start_game, end_game, send_time, pause_game, send_field_setup
 }

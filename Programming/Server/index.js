@@ -8,7 +8,7 @@ const {createAddress} = require("./utils.js");
 let {Tank, getTank, tank_list} = require("./tank.js");
 let {Obstacle, obstacles_list, getObstacle, getObstacles} = require("./obstacles.js");
 let {Client, client_list, getWithType, countClientType} = require("./client.js")
-let {start_game, pause_game, pause, end_game} = require("./game_controller.js");
+let {start_game, pause_game, pause, end_game, send_field_setup} = require("./game_controller.js");
 // const { setUrl } = require('./http_server.js');
 
 let raspberry = undefined;
@@ -112,7 +112,7 @@ const server = net.createServer(async (socket) => {
                             case "client": {
                                 let counter = countClientType("client")
                                 if (counter < 2) {
-                                    client = new Client(socket, data["who"])
+                                    client = new Client(socket, "client")
                                     counter += 1
                                     Logger.success(`${data["who"]} №${counter} инициализирован. Адрес: ` + address)
                                     team = (counter === 1 ? "blue" : "red")
@@ -124,6 +124,10 @@ const server = net.createServer(async (socket) => {
                                 }
                                 break
                             }
+                            case "manager":
+                                client = new Client(socket, "client")
+                                send_field_setup("manager")
+                                break
                             default: {
                                 client = new Client(socket, data["who"])
                                 break

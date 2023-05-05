@@ -1,5 +1,3 @@
-from tcpip import connection
-
 last_obstacles = []
 
 def update_field(new_obstacles):
@@ -28,4 +26,4 @@ def update_field(new_obstacles):
             arr.append(nobs)
         
     last_obstacles = new_obstacles
-    connection.send({"command": "edit", "what": "obstacles", "list": arr})
+    return {"command": "edit", "what": "obstacles", "list": arr}

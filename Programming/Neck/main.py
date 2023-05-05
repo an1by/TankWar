@@ -21,6 +21,7 @@ allSprites = pygame.sprite.Group()
 ###
 from utils import *
 from maps import map_list
+import tanks
 
 import sys
 sys.path.insert(1, '../Libraries')
@@ -28,8 +29,6 @@ sys.path.insert(1, '../Libraries')
 from tcpip import connection
 connection.connect('play.aniby.net', 3030)
 connection.init("manager")
-
-import tanks
 
 
 ### Настраиваем пути текстур ###
@@ -106,7 +105,7 @@ def mainMenu():
                         "y": sprite.rect.y // cells["size"]
                     }
                     to_update.append({"position": position, "type": sprite.custom_type})
-            manager.update_field(to_update)
+            connection.send(manager.update_field(to_update))
             ten_timer = 0
 
         screen.fill((0, 0, 0))
@@ -160,6 +159,7 @@ def mainMenu():
                                                     count += 1
                                             tank = tanks.Tank("red", count, False)
                                             tank.move(coords)
+                                            tanks.active_tank = tank
                                     case 3: # ПКМ
                                         if not tank:
                                             count = 0
@@ -168,8 +168,11 @@ def mainMenu():
                                                     count += 1
                                             tank = tanks.Tank("blue", count, False)
                                             tank.move(coords)
+                                            tanks.active_tank = tank
                 case pygame.KEYDOWN:
                     match event.key:
+                        case pygame.K_ESCAPE:
+                            tanks.active_tank = None
                         case pygame.K_o:
                             what_to_change = "obstacles"
                         case pygame.K_t:
