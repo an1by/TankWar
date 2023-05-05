@@ -21,7 +21,7 @@ let url = ''
 app.get('/', (req, res) => {
     return res.render("index",
         {
-            srcAttr: url
+            srcAttr: 'data:image/png;base64,' + url
         }
     );
 })

