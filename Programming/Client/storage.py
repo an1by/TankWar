@@ -121,26 +121,9 @@ up_buttons = {
     )
 }
 settings_buttons = {
-    "health": button.SwitchButton(
-        all_cells_size, cells["size"] * 1.5,
-        (screen_size[0] - all_cells_size) // 2, cells["size"] * 2,
-        [80, 80, 80],
-        {
-            "text": "Жизни",
-            "color": (255, 255, 255),
-            "x": 0,
-            "y": 0
-        },
-        ["1", "2", "3"],
-        transparent = {
-            "color": [50, 50, 50],
-            "time": 0.4
-        },
-        font = calibri_font
-    ),
     "ai_game": button.SwitchButton(
         all_cells_size, cells["size"] * 1.5,
-        (screen_size[0] - all_cells_size) // 2, cells["size"] * 4,
+        (screen_size[0] - all_cells_size) // 2, cells["size"] * 2,
         [80, 80, 80],
         {
             "text": "Игра с ИИ",
@@ -157,7 +140,7 @@ settings_buttons = {
     ),
     "dendy": button.SwitchButton(
         all_cells_size, cells["size"] * 1.5,
-        (screen_size[0] - all_cells_size) // 2, cells["size"] * 6,
+        (screen_size[0] - all_cells_size) // 2, cells["size"] * 4,
         [80, 80, 80],
         {
             "text": "Режим Dendy",
@@ -190,7 +173,8 @@ menu_buttons = {
             "color": [20, 20, 20],
             "time": 1
         },
-        orientation = "center"
+        orientation = "center",
+        font=calibri_font
     ),
     "settings": button.CanvasButton(
         all_cells_size, cells["size"] * 1.5,
@@ -208,7 +192,8 @@ menu_buttons = {
             "color": [20, 20, 20],
             "time": 1
         },
-        orientation = "center"
+        orientation = "center",
+        font=calibri_font
     ),
     "authors": button.CanvasButton(
         all_cells_size, cells["size"] * 1.5,
@@ -226,7 +211,8 @@ menu_buttons = {
             "color": [20, 20, 20],
             "time": 1
         },
-        orientation = "center"
+        orientation = "center",
+        font=calibri_font
     )
 }
 

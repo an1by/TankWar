@@ -304,7 +304,8 @@ def main():
                 main_canvas.fill((37, 250, 73))
                 main_canvas.blit(authors_canvas, (0, 0))
                 authors_canvas.fill((100, 100, 100))
-                credits.draw(authors_canvas)
+                if credits.draw(authors_canvas):
+                    game_status = "menu"
 
             case "settings":
                 # settings_buttons
@@ -356,6 +357,8 @@ def main():
         match (game_status):
             case "settings" | "server_select" | "authors":
                 if up_buttons["back"].draw(screen):
+                    if game_status == "authors":
+                        credits.reset()
                     game_status = "menu"
             case "game":
                 if up_buttons["back"].draw(screen):
