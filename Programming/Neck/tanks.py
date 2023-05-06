@@ -1,6 +1,11 @@
 import pygame
 from utils import *
 
+import sys
+sys.path.insert(1, '../Libraries')
+
+from tcpip import connection
+
 green_tank = {
     "alive": getImage('tanks/green'),
     "dead": getImage('tanks/green_dead')
@@ -50,16 +55,31 @@ class Tank(object):
     def set_position(self, position: CoordinatesObject):
         self.position = position
 
-    def move(self, position: CoordinatesObject):
+    def move(self, position: CoordinatesObject, additional = False):
         if position.angle == 0:
             position.angle = 360
         elif position.angle > 360:
             position.angle = 90
 
-        self.position = position
+        if additional:
+            self.position.x += position.x
+            self.position.y += position.y
+            self.position.angle = position.angle
+        else:
+            self.position = position
+        connection.send({
+            "command": "step",
+            "what": "move",
+            "team": self.team,
+            "number": self.number,
+            "position": self.position.to_json()
+        })
     
-    def rotate(self):
-        self.move(self.position.x, self.position.y, self.position.angle + 90)
+    def rotate(self, angle = None):
+        coords = CoordinatesObject(0, 0)
+        coords.angle = angle if angle else self.position.angle + 90
+        self.move(coords, True)
+        self.image = pygame.transform.rotate(self.original_image, self.position.angle - 90)
 
     def draw(self, surface: pygame.Surface):
         """
