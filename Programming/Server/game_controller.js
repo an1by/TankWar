@@ -1,7 +1,7 @@
 const {getWithType} = require("./client")
 const Logger = require("./logger.js");
-const { getTanks, Tank, tank_list, clearTankList } = require("./tank");
-const { getObstacles, Obstacle, obstacles_list, clearObstaclesList } = require("./obstacles");
+const { getTanks, Tank, tank_list } = require("./tank");
+const { getObstacles, obstacles_list } = require("./obstacles");
 
 let step_timer = -10;
 let pause = false;
@@ -42,10 +42,8 @@ function send_field_setup(who) {
 }
 
 function end_game(winner=undefined) {
-    // tank_list.forEach(tank => tank.disconnect())
-    // obstacles_list.forEach(obstacle => obstacle.delete())
-    clearTankList()
-    clearObstaclesList()
+    tank_list.forEach(tank => tank.disconnect())
+    obstacles_list.forEach(obstacle => obstacle.delete())
     ////////////////////
     step_timer = -10
     for (const client of getWithType("client")) {

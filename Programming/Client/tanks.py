@@ -89,6 +89,7 @@ class Tank(object):
         self.position.x, self.position.y = position.x, position.y
         if position.angle:
             self.position.angle = position.angle
+            self.rotate
             self.rotate(position.angle)
 
     def move(self, position: CoordinatesObject):

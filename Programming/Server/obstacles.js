@@ -39,10 +39,6 @@ function getObstacle(position) {
     return undefined;
 }
 
-function clearObstaclesList() {
-    obstacles_list = []
-}
-
 module.exports = {
-    Obstacle, obstacles_list, getObstacle, getObstacles,clearObstaclesList
+    Obstacle, obstacles_list, getObstacle, getObstacles
 }

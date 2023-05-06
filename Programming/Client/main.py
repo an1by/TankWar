@@ -363,6 +363,15 @@ def main():
                     game_winner = None
                     tanks.tank_list = []
                     obstacles.obstacle_list = []
+                    current_choose = ""
+                    team = None
+                    pause = False
+                    temp_position = None
+                    step_time = 30
+                    colors = {
+                        "me": (97, 65, 67),
+                        "enemy": (52, 69, 76)
+                    }
                     connection.stop()
         pygame.display.flip()
         received = None

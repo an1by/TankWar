@@ -58,7 +58,7 @@ class Tank {
                 angle: -1
             }
             return `(X: ${this.position.x} | Y: ${this.position.y} | Угол: ${this.position.angle})`;
-            }
+        }
         return undefined;
     }
     disconnect() {
@@ -66,7 +66,7 @@ class Tank {
             this.client.disconnect();
         for (let i = 0; i < tank_list.length; i++) {
             let tank = tank_list[i]
-            if (tank && tank.client.address === this.client.address) {
+            if (tank && tank.team === this.team && tank.number === this.number) {
                 tank_list.splice(i, 1);
             }
         }
@@ -174,10 +174,6 @@ function getTanks() {
     return tanks
 }
 
-function clearTankList() {
-    tank_list = []
-}
-
 module.exports = {
-    Tank, tank_list, getTank, getTankByAddress, getTankByPosition, getTanks, clearTankList
+    Tank, tank_list, getTank, getTankByAddress, getTankByPosition, getTanks
 }
