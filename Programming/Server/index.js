@@ -150,25 +150,45 @@ const server = net.createServer(async (socket) => {
                             })
                             break
                         }
-                        case "move": {
-                            if (!client || client.type !== "client"|| client.type !== "manager")
+                        case "move_anyway":
+                            if (client.type !== "manager")
                                 return
                             const number = data["number"],
-                                position = data["position"]
-                            let tank = "team" in data ? getTank(number, data["team"]) : getTank(number, client.team);
+                                position = data["position"],
+                                team = data["team"]
+                            let tank = team;
                             if (!tank)
                                 return;
-                            if (position.x < 0 || position.y < 0) {
+                            if (!tank.pre_move(position)) {
                                 tank.disconnect();
                                 Logger.warning(`Танк №${number} вышел за поле! Отключен.`)
                                 return;
                             }
-                            tank.pre_move(position)
-                            if (client.type === "client") {
-                                pause_game(true)
-                                if (getWithType("controller").length > 0) {
-                                    break
-                                }
+                            let result = tank.move()
+                            client.broadcast_data("client", {
+                                "action": "move_tank",
+                                "team": team,
+                                "number": number,
+                                "position": position
+                            })
+                            Logger.info(`Танк №${number} из команды ${team} передвинут менеджером! ${result}`)
+                            break
+                        case "move": {
+                            if (!client || client.type !== "client")
+                                return
+                            const number = data["number"],
+                                position = data["position"]
+                            let tank = getTank(number, client.team);
+                            if (!tank)
+                                return;
+                            if (!tank.pre_move(position)) {
+                                tank.disconnect();
+                                Logger.warning(`Танк №${number} вышел за поле! Отключен.`)
+                                return;
+                            }
+                            pause_game(true)
+                            if (getWithType("controller").length > 0) {
+                                break
                             }
                         }
                         case "final_move": {
@@ -189,15 +209,13 @@ const server = net.createServer(async (socket) => {
                                     "number": tank.number,
                                     "position": tank.position
                                 })
-                                if (client.type === "client") {
-                                    client.broadcast_data("manager", { //MANAGER
-                                        "action": "move_tank",
-                                        "team": client.team,
-                                        "number": tank.number,
-                                        "position": tank.position
-                                    })
-                                    pause_game(false)
-                                }
+                                client.broadcast_data("manager", { //MANAGER
+                                    "action": "move_tank",
+                                    "team": client.team,
+                                    "number": tank.number,
+                                    "position": tank.position
+                                })
+                                pause_game(false)
                             } else {
                                 Logger.error(`Танк с предварительной позицией для передвижения не найден!`)
                             }

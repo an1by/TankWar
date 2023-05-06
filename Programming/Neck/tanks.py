@@ -69,7 +69,7 @@ class Tank(object):
             self.position = position
         connection.send({
             "command": "step",
-            "what": "move",
+            "what": "move_anyway",
             "team": self.team,
             "number": self.number,
             "position": self.position.to_json()

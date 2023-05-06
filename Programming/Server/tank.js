@@ -1,6 +1,7 @@
 const {getObstacle} = require("./obstacles");
 const {Client, getWithType} = require("./client")
 const {getAngle, sleep} = require("./utils")
+
 let tank_list = []
 
 class Tank {
@@ -34,6 +35,8 @@ class Tank {
         return this;
     }
     pre_move(position) {
+        if (position.x < 0 || position.y < 0)
+            return false
         this.temp_move = {
             x: position["x"],
             y: position["y"],
@@ -44,6 +47,7 @@ class Tank {
             "from": this.position,
             "to": this.temp_move
         })
+        return true
     }
     move() {
         if (this.temp_move.x !== -1) {
@@ -54,7 +58,7 @@ class Tank {
                 angle: -1
             }
             return `(X: ${this.position.x} | Y: ${this.position.y} | Угол: ${this.position.angle})`;
-        }
+            }
         return undefined;
     }
     disconnect() {
@@ -170,6 +174,10 @@ function getTanks() {
     return tanks
 }
 
+function clearTankList() {
+    tank_list = []
+}
+
 module.exports = {
-    Tank, tank_list, getTank, getTankByAddress, getTankByPosition, getTanks
+    Tank, tank_list, getTank, getTankByAddress, getTankByPosition, getTanks, clearTankList
 }
