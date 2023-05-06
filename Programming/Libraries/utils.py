@@ -13,10 +13,10 @@ def is_empty(data):
     return data == {} or data == None or data == ''
 
 class CoordinatesObject(object):
-    def __init__(self, x = -1, y = -1):
+    def __init__(self, x = -1, y = -1, angle = 360):
         self.x = x
         self.y = y
-        self.angle = 0
+        self.angle = angle
     
     def to_tuple(self):
         return (self.x, self.y)

@@ -56,18 +56,14 @@ class Tank(object):
         self.position = position
         self.rotate_localy()
 
-    def move(self, position: CoordinatesObject, additional = False):
+    def move(self, position: CoordinatesObject):
         if position.angle == 0:
             position.angle = 360
         elif position.angle > 360:
             position.angle = 90
 
-        if additional:
-            self.position.x += position.x
-            self.position.y += position.y
-            self.position.angle = position.angle
-        else:
-            self.position = position
+        self.position = position
+
         connection.send({
             "command": "step",
             "what": "move_anyway",
@@ -80,9 +76,9 @@ class Tank(object):
         self.image = pygame.transform.rotate(self.original_image, self.position.angle - 90)
 
     def rotate(self, angle = None):
-        coords = CoordinatesObject(0, 0)
-        coords.angle = angle if angle else self.position.angle + 90
-        self.move(coords, True)
+        coords = self.position
+        coords.angle = angle if angle else coords.angle + 90
+        self.move(coords)
         self.rotate_localy()
 
     def draw(self, surface: pygame.Surface):
@@ -90,6 +86,22 @@ class Tank(object):
         Отрисовка танка на поверхности PyGame
         """
         surface.blit(self.image, (self.position.x  * cells["size"], self.position.y * cells["size"]))
+    
+    def add(self):
+        connection.send({
+            "command": "init",
+            "who": "tank",
+            "number": self.number,
+            "team": self.team
+        })
+
+    def delete(self):
+        connection.send({
+            "command": "clear",
+            "what": "tank",
+            "number": self.number,
+            "team": self.team
+        })
 
 tank_list: list[Tank] = []
 

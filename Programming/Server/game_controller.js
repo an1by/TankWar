@@ -141,5 +141,5 @@ async function start_timer() {
 }
 
 module.exports = {
-    start_timer, start_game, end_game, send_time, pause_game, send_field_setup
+    start_timer, start_game, end_game, send_time, pause_game, send_field_setup, step_timer
 }

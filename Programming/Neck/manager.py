@@ -1,3 +1,8 @@
+import sys
+sys.path.insert(1, '../Libraries')
+
+from tcpip import connection
+
 last_obstacles = []
 
 def update_field(new_obstacles):
@@ -26,4 +31,5 @@ def update_field(new_obstacles):
             arr.append(nobs)
         
     last_obstacles = new_obstacles
-    return {"command": "edit", "what": "obstacles", "list": arr}
+    if arr != []:
+        connection.send({"command": "edit", "what": "obstacles", "list": arr})

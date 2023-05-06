@@ -2,6 +2,11 @@
 import sys
 sys.path.insert(1, '../Libraries')
 
+from tcpip import connection
+connection.connect('play.aniby.net', 3030)
+connection.init("manager")
+
+from time import sleep
 import pygame
 from pygame.locals import *
 import manager
@@ -25,10 +30,6 @@ allSprites = pygame.sprite.Group()
 ###
 from utils import *
 from maps import map_list
-
-from tcpip import connection
-connection.connect('play.aniby.net', 3030)
-connection.init("manager")
 
 import tanks
 
@@ -109,7 +110,7 @@ def mainMenu():
                         "y": sprite.rect.y // cells["size"]
                     }
                     to_update.append({"position": position, "type": sprite.custom_type})
-            connection.send(manager.update_field(to_update))
+            manager.update_field(to_update)
             ten_timer = 0
 
         screen.fill((0, 0, 0))
@@ -158,6 +159,8 @@ def mainMenu():
                                                 if t.team == "red":
                                                     count += 1
                                             tank = tanks.Tank("red", count, False)
+                                            tank.add()
+                                            sleep(500)
                                             tank.move(coords)
                                             tanks.active_tank = tank
                                     case 3: # ПКМ
@@ -167,6 +170,8 @@ def mainMenu():
                                                 if t.team == "blue":
                                                     count += 1
                                             tank = tanks.Tank("blue", count, False)
+                                            tank.add()
+                                            sleep(500)
                                             tank.move(coords)
                                             tanks.active_tank = tank
                 case pygame.KEYDOWN:
@@ -204,6 +209,9 @@ def mainMenu():
                                 angle = -1
                                 to_x, to_y = 0, 0
                                 match event.key:
+                                    case pygame.K_DELETE:
+                                        tanks.active_tank.delete()
+
                                     case pygame.K_RIGHT:
                                         angle = 360
                                     case pygame.K_UP:
@@ -221,10 +229,16 @@ def mainMenu():
                                         to_x = -1
                                     case pygame.K_s:
                                         to_y = 1
-                                if angle >= 0:
+                                if angle >= 0 and angle != tanks.active_tank.position.angle:
                                     tanks.active_tank.rotate(angle)
-                                if to_x != 0 or to_y != 0:
-                                    tanks.active_tank.move(CoordinatesObject(to_x, to_y), additional=True)
+                                elif to_x != 0 or to_y != 0:
+                                    tanks.active_tank.move(
+                                        CoordinatesObject(
+                                            tanks.active_tank.position.x + to_x,
+                                            tanks.active_tank.position.y + to_y,
+                                            tanks.active_tank.position.angle
+                                        )
+                                    )
         
         allSprites.update()
         allSprites.draw(screen)

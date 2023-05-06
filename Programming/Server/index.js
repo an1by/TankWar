@@ -5,10 +5,10 @@ require('dotenv').config()
 const net = require('net');
 const Logger = require("./logger.js");
 const {createAddress} = require("./utils.js");
-let {Tank, getTank, tank_list} = require("./tank.js");
+let {Tank, getTank, tank_list, getTanks} = require("./tank.js");
 let {Obstacle, obstacles_list, getObstacle, getObstacles} = require("./obstacles.js");
 let {Client, client_list, getWithType} = require("./client.js")
-let {start_game, pause_game, pause, end_game, send_field_setup} = require("./game_controller.js");
+let {start_game, pause_game, pause, end_game, send_field_setup, step_timer} = require("./game_controller.js");
 // const { setUrl } = require('./http_server.js');
 
 let raspberry = undefined;
@@ -48,6 +48,20 @@ const server = net.createServer(async (socket) => {
                         case "obstacles":
                             obstacles_list = []
                             break
+                        case "tank":
+                            const number = data["number"],
+                                team = data["team"]
+                            let tank = getTank(number, team);
+                            if (tank)
+                                tank.disconnect()
+                                client.broadcast_data("client", {
+                                    "action": "set_tanks",
+                                    "obstacles": getTanks()
+                                })
+                                client.send_data({
+                                    "action": "set_tanks",
+                                    "obstacles": getTanks()
+                                })
                     }
                     break
                 }
@@ -73,6 +87,7 @@ const server = net.createServer(async (socket) => {
                                 "action": "set_obstacles",
                                 "obstacles": getObstacles()
                             })
+                            break
                         }
                     }
                     break
@@ -82,16 +97,36 @@ const server = net.createServer(async (socket) => {
                         case "tank": {
                             if (getWithType("tank").length >= 6)
                                 return
-                            const number = data["number"];
-                            const team = data["team"] // red/blue
-                            let new_tank = new Tank(number, team, socket);
-                            if (data["move"]) {
+                            const number = data["number"],
+                                team = data["team"] // red/blue
+                            let new_tank = getTank(number, team);
+                            if (new_tank) {
+                                new_tank.socket = socket
+                                Logger.success(`Танк №${number} из команды ${team} обрел тело. (IP: ${address})`)
+                            }
+                            else {
+                                new_tank = new Tank(number, team, (client && client.type == "manager" ? undefined : socket))
+                                Logger.success(`Новый танк №${number} команды ${team} инициализирован.`)
+                            }
+                            if ("move" in data) {
                                 position = {
                                     x: data["move"]["x"],
                                     y: data["move"]["y"]
                                 }
                                 new_tank.move(position)
                             }
+                            if (step_timer >= 0)
+                                client.broadcast_data("client", {
+                                    "action": "set_tanks",
+                                    "obstacles": getTanks()
+                                })
+                                getWithType("manager").forEach(manager =>
+                                    manager.send_data({
+                                        "action": "set_tanks",
+                                        "obstacles": getTanks()
+                                    })    
+                                )
+                            
                             Logger.success(`Танк №${number} инициализирован. Адрес: ` + address)
                             break
                         }
@@ -120,6 +155,8 @@ const server = net.createServer(async (socket) => {
                             break
                         }
                         case "manager":
+                            if (getWithType("manager").length > 0)
+                                return
                             client = new Client(socket, "manager")
                             send_field_setup("manager")
                             break

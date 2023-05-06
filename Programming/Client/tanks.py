@@ -89,7 +89,6 @@ class Tank(object):
         self.position.x, self.position.y = position.x, position.y
         if position.angle:
             self.position.angle = position.angle
-            self.rotate
             self.rotate(position.angle)
 
     def move(self, position: CoordinatesObject):
@@ -116,6 +115,8 @@ class Tank(object):
             for tank in tank_list:
                 if tank.position.x == position.x and tank.position.y == position.y:
                     return False
+            return True
+        elif position.angle != self.position.angle:
             return True
         return False
     
