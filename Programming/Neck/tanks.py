@@ -1,9 +1,9 @@
-import pygame
-from utils import *
-
+# Инициализация папки общих библиотек
 import sys
 sys.path.insert(1, '../Libraries')
 
+import pygame
+from utils import *
 from tcpip import connection
 
 green_tank = {
@@ -54,6 +54,7 @@ class Tank(object):
 
     def set_position(self, position: CoordinatesObject):
         self.position = position
+        self.rotate_localy()
 
     def move(self, position: CoordinatesObject, additional = False):
         if position.angle == 0:
@@ -75,11 +76,14 @@ class Tank(object):
             "position": self.position.to_json()
         })
     
+    def rotate_localy(self):
+        self.image = pygame.transform.rotate(self.original_image, self.position.angle - 90)
+
     def rotate(self, angle = None):
         coords = CoordinatesObject(0, 0)
         coords.angle = angle if angle else self.position.angle + 90
         self.move(coords, True)
-        self.image = pygame.transform.rotate(self.original_image, self.position.angle - 90)
+        self.rotate_localy()
 
     def draw(self, surface: pygame.Surface):
         """

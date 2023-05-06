@@ -156,7 +156,7 @@ const server = net.createServer(async (socket) => {
                             const number = data["number"],
                                 position = data["position"],
                                 team = data["team"]
-                            let tank = team;
+                            let tank = getTank(number, team);
                             if (!tank)
                                 return;
                             if (!tank.pre_move(position)) {

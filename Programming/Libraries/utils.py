@@ -16,7 +16,7 @@ class CoordinatesObject(object):
     def __init__(self, x = -1, y = -1):
         self.x = x
         self.y = y
-        self.angle: float = 0.0
+        self.angle = 0
     
     def to_tuple(self):
         return (self.x, self.y)

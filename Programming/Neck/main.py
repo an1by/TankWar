@@ -1,3 +1,7 @@
+# Инициализация папки общих библиотек
+import sys
+sys.path.insert(1, '../Libraries')
+
 import pygame
 from pygame.locals import *
 import manager
@@ -21,9 +25,6 @@ allSprites = pygame.sprite.Group()
 ###
 from utils import *
 from maps import map_list
-
-import sys
-sys.path.insert(1, '../Libraries')
 
 from tcpip import connection
 connection.connect('play.aniby.net', 3030)
