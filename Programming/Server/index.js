@@ -56,11 +56,11 @@ const server = net.createServer(async (socket) => {
                                 tank.disconnect()
                                 client.broadcast_data("client", {
                                     "action": "set_tanks",
-                                    "obstacles": getTanks()
+                                    "tanks": getTanks()
                                 })
                                 client.send_data({
                                     "action": "set_tanks",
-                                    "obstacles": getTanks()
+                                    "tanks": getTanks()
                                 })
                     }
                     break
