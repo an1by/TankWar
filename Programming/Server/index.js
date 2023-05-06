@@ -29,7 +29,6 @@ const server = net.createServer(async (socket) => {
         try {
             let recv = received.toString();
             let data = JSON.parse(recv);
-            console.log(data)
             switch (data["command"]) {
                 case "log": {
                     console.log(data["message"])
@@ -319,8 +318,6 @@ const server = net.createServer(async (socket) => {
     });
 
     socket.on('error', function(ex) {
-        // console.log(ex)
-        // ignore
         if (client) {
             client.disconnect()
         }
@@ -336,5 +333,5 @@ const server = net.createServer(async (socket) => {
 });
 
 server.listen(process.env.PORT, function() {
-    console.log(`Сервер запущен на порту: ${process.env.PORT}`);
+    Logger.info(`Сервер запущен на порту: ${process.env.PORT}`);
 });

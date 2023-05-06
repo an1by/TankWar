@@ -109,16 +109,17 @@ class Tank(object):
         if position.x < 0 or position.y < 0:
             return False
         moving = abs(self.position.x - position.x) + abs(self.position.y - position.y)
-        if moving == 1:
-            if obstacles.foundObstacle(position):
+        if moving > 1:
+            return False
+        elif position.angle != self.position.angle and moving == 0:
+            return True
+        
+        if obstacles.foundObstacle(position):
+            return False
+        for tank in tank_list:
+            if tank.position.x == position.x and tank.position.y == position.y:
                 return False
-            for tank in tank_list:
-                if tank.position.x == position.x and tank.position.y == position.y:
-                    return False
-            return True
-        elif position.angle != self.position.angle:
-            return True
-        return False
+        return True
     
     def get_ranges(self):
         """

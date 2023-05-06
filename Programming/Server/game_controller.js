@@ -107,13 +107,11 @@ function send_time(change_step=false) {
         step_timer = 30
     for (const client of getWithType("client")) {
         if (change_step) {
-            // console.log(client.step)
             switch (client.step) {
                 case true:
                 case false:
                     client.step = !client.step
             }
-            // console.log(client.step)
         }
         client.send_data({
             "action": "step_feedback",

@@ -211,6 +211,7 @@ def mainMenu():
                                 match event.key:
                                     case pygame.K_DELETE:
                                         tanks.active_tank.delete()
+                                        tanks.active_tank = None
 
                                     case pygame.K_RIGHT:
                                         angle = 360
