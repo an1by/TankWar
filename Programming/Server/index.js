@@ -118,12 +118,12 @@ const server = net.createServer(async (socket) => {
                             if (step_timer >= 0)
                                 client.broadcast_data("client", {
                                     "action": "set_tanks",
-                                    "obstacles": getTanks()
+                                    "tanks": getTanks()
                                 })
                                 getWithType("manager").forEach(manager =>
                                     manager.send_data({
                                         "action": "set_tanks",
-                                        "obstacles": getTanks()
+                                        "tanks": getTanks()
                                     })    
                                 )
                             
