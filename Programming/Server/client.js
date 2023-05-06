@@ -54,15 +54,15 @@ function getClient(address) {
     return undefined;
 }
 
-function countClientType(type) {
-    let amount = 0
-    for (let client of client_list) {
-        if (client.type === type)
-            amount += 1
-    }
-    return amount;
-}
+// function countClientType(type) {
+//     let amount = 0
+//     for (let client of client_list) {
+//         if (client.type === type)
+//             amount += 1
+//     }
+//     return amount;
+// }
 
 module.exports = {
-    Client, client_list, getClient, getWithType, countClientType
+    Client, client_list, getClient, getWithType
 }

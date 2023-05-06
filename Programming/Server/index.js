@@ -7,7 +7,7 @@ const Logger = require("./logger.js");
 const {createAddress} = require("./utils.js");
 let {Tank, getTank, tank_list} = require("./tank.js");
 let {Obstacle, obstacles_list, getObstacle, getObstacles} = require("./obstacles.js");
-let {Client, client_list, getWithType, countClientType} = require("./client.js")
+let {Client, client_list, getWithType} = require("./client.js")
 let {start_game, pause_game, pause, end_game, send_field_setup} = require("./game_controller.js");
 // const { setUrl } = require('./http_server.js');
 
@@ -105,7 +105,7 @@ const server = net.createServer(async (socket) => {
                             break
                         }
                         case "client": {
-                            let counter = countClientType("client")
+                            let counter = getWithType("client").length
                             if (counter < 2) {
                                 client = new Client(socket, "client")
                                 counter += 1
@@ -120,7 +120,7 @@ const server = net.createServer(async (socket) => {
                             break
                         }
                         case "manager":
-                            client = new Client(socket, "client")
+                            client = new Client(socket, "manager")
                             send_field_setup("manager")
                             break
                         default: {
