@@ -150,7 +150,7 @@ const server = net.createServer(async (socket) => {
                                 client.team = team
                                 client.send_data({"action": "init", "team": team})
                                 if (counter == 2) {
-                                    await start_game()
+                                    await game.start()
                                 }
                             }
                             break
@@ -224,7 +224,7 @@ const server = net.createServer(async (socket) => {
                                 Logger.warning(`Танк №${number} вышел за поле! Отключен.`)
                                 return;
                             }
-                            pause_game(true)
+                            game.pause(true)
                             if (getWithType("controller").length > 0) {
                                 break
                             }
@@ -253,7 +253,7 @@ const server = net.createServer(async (socket) => {
                                     "number": tank.number,
                                     "position": tank.position
                                 })
-                                pause_game(false)
+                                game.pause(false)
                             } else {
                                 Logger.error(`Танк с предварительной позицией для передвижения не найден!`)
                             }
@@ -270,7 +270,7 @@ const server = net.createServer(async (socket) => {
                                 return;
                             }
                             tank.pre_fire(target_position)
-                            pause_game(true)
+                            game.pause(true)
                             if (getWithType("controller").length > 0) {
                                 break
                             }
@@ -292,7 +292,7 @@ const server = net.createServer(async (socket) => {
                                 client.send_data(result)
                                 client.broadcast_data("client", result)
                                 client.broadcast_data("manager", result) //MANAGER
-                                pause_game(false)
+                                game.pause(false)
 
                                 let dead_counter = [0, 0]
                                 let all_counter = [0, 0]
@@ -302,9 +302,9 @@ const server = net.createServer(async (socket) => {
                                         dead_counter[(tank.team == "red") ? 0 : 1] += 1
                                 })
                                 if (dead_counter[0] == all_counter[0])
-                                    end_game("blue")
+                                    game.end("blue")
                                 else if (dead_counter[1] == all_counter[1])
-                                    end_game("red")
+                                    game.end("red")
                             } else {
                                 Logger.error(`Танк с предварительной целью для атаки не найден!`)
                             }
