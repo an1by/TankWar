@@ -53,7 +53,7 @@ const server = net.createServer(async (socket) => {
                             const number = data["number"],
                                 team = data["team"]
                             let tank = getTank(number, team);
-                            if (tank)
+                            if (tank) {
                                 tank.disconnect()
                                 client.broadcast_data("client", {
                                     "action": "set_tanks",
@@ -63,6 +63,8 @@ const server = net.createServer(async (socket) => {
                                     "action": "set_tanks",
                                     "tanks": getTanks()
                                 })
+                            }
+                            break
                     }
                     break
                 }

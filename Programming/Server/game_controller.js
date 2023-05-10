@@ -1,24 +1,24 @@
 const {getWithType} = require("./client")
 const Logger = require("./logger.js");
-const { getTanks, Tank, tank_list } = require("./tank");
+const { getTanks, tank_list } = require("./tank");
 const { getObstacles, obstacles_list } = require("./obstacles");
 
 let step_timer = -10;
 let pause = false;
 
 async function start_game() {
-    //////TO DELETE//////
-    for (let i = 0; i < 6; i++) {
-        let team = (i > 2 ? "red" : "blue")
-        let number = i
-        if (number > 2) 
-            number -= 3
-        const t = new Tank(number, team, undefined)
-        t.position.x = i;
-        t.position.y = (team == "red" ? 0 : 1)
-        t.position.angle = (team == "red" ? 270 : 90)
-    }
-    //////TO DELETE//////
+    //////DEBUG FEATURE//////
+    // for (let i = 0; i < 6; i++) {
+    //     let team = (i > 2 ? "red" : "blue")
+    //     let number = i
+    //     if (number > 2) 
+    //         number -= 3
+    //     const t = new Tank(number, team, undefined)
+    //     t.position.x = i;
+    //     t.position.y = (team == "red" ? 0 : 1)
+    //     t.position.angle = (team == "red" ? 270 : 90)
+    // }
+    //////DEBUG FEATURE//////
     send_field_setup("client")
     send_field_setup("manager")
     step_timer = 30
