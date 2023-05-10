@@ -289,7 +289,8 @@ const server = net.createServer(async (socket) => {
                             }
                             if (result !== undefined && tank !== undefined) {
                                 Logger.info(`Танк №${tank.number} из команды ${tank.team} выстрелил! ${result.message}`)
-                                client.send_data(result)
+                                if (client.type !== "controller")
+                                    client.send_data(result)
                                 client.broadcast_data("client", result)
                                 client.broadcast_data("manager", result) //MANAGER
                                 pause_game(false)
