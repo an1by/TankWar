@@ -125,15 +125,14 @@ function send_time(change_step=false) {
 
 async function start_timer() {
     let id = setInterval(() => {
-        if (pause) {
+        if (step_timer <= -10) {
+            end_game()
+            clearInterval(id)
+        } else if (pause) {
             send_time()
         } else if (step_timer > 0) {
             step_timer -= 1
             send_time()
-        } else if (step_timer <= -10) {
-            end_game()
-            clearInterval(id)
-            return
         } else {
             send_time(true)
         }
