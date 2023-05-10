@@ -15,6 +15,7 @@ razdiscell = [
 
 calibri_font = pygame.font.SysFont('calibri', 72)
 arial_font = pygame.font.SysFont('arial', 16)
+medium_arial_font = pygame.font.SysFont('arial', 24)
 
 servers = [
     {
@@ -291,7 +292,7 @@ game_buttons = { # ◀▶▲▼
             orientation = "center"
         ),
     },
-    "fire_move": button.SwitchButton(
+    "fire": button.SwitchButton(
         cells["size"] * 3, cells["size"] * 0.8,
         (screen_size[0] - cells["size"] * 3.8), cells["size"] * 1.5,
         [80, 80, 80],
@@ -306,5 +307,23 @@ game_buttons = { # ◀▶▲▼
             "color": [50, 50, 50],
             "time": 0.4
         }
+    ),
+    "skip": button.CanvasButton(
+        cells["size"] * cells["amount"], cells["size"],
+        (screen_size[0] - cells["size"] * cells["amount"]) // 2, screen_size[1] - cells["size"] * 1.2,
+        [80, 80, 80],
+        [
+            {
+                "text": "Пропуск хода",
+                "color": (255, 255, 255),
+                "x": 0,
+                "y": 0
+            }
+        ],
+        transparent = {
+            "color": [20, 20, 20],
+            "time": 1
+        },
+        orientation = "center"
     )
 }

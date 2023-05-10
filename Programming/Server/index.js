@@ -170,6 +170,9 @@ const server = net.createServer(async (socket) => {
                 }
                 case "step": {
                     switch (data["what"]) {
+                        case "skip":
+                            send_time(true)
+                            break
                         case "dead_status": {
                             const number = data["number"],
                                 team = data["team"]

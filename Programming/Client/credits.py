@@ -1,6 +1,6 @@
 import pygame
 from storage import screen_size
-from utils import draw_text, get_text_render
+from utils import draw_text, get_text_render, arial_font
 
 lvg = "Лукьянов Владислав Геннадьевич"
 pav = "Павлиди Дмитрий (aniby.net)"
@@ -9,18 +9,24 @@ den = "Родионов Даниил"
 egor = "Литвинов Егор"
 shev = "Никита Шевцов"
 titres = [
+    ["ДЛЯ ВАС СТАРАЛАСЬ", ["Команда Краснодарского ПКУ"]],
+    ["", ""],
+
     ["Руководитель проекта", lvg],
 
     ["Программа клиента", pav],
     ["Серверная часть", pav],
-    ["Дизайн", pav],
+
+    ["Дизайн", [shev, pav]],
 
     ["Механическое поле", [kot, egor, den, shev]],
-    ["Управление танками на поле", [kot, egor]],
-    ["Взаимодействие с танками", kot],
+    ["Управление танками на поле", [kot, pav, egor, den]],
 
-    ["Распознавание объектов", egor]
+    ["Распознавание объектов", [egor, pav]]
 ]
+
+ud_arial = pygame.font.SysFont('arial', 36)
+ud_arial.set_underline(True)
 
 class Credits(object):
     def __init__(self):
@@ -38,7 +44,7 @@ class Credits(object):
         lower_pos = 10**4
         for index, titers in enumerate(titres):
             titles = [
-                get_text_render(titers[0])
+                get_text_render(titers[0], font=ud_arial)
             ]
             if isinstance(titers[1], list):
                 for t in titers[1]:

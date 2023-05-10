@@ -11,12 +11,12 @@ pygame.font.init()
 arial_font = pygame.font.SysFont('arial', 36)
 
 def get_text_render(text, font=arial_font, text_color = (255, 255, 255)):
+    if not font:
+        font = arial_font
     return font.render(str(text), True, text_color)
 
 def draw_text(surface, text: pygame.Surface | str, x, y, text_color = (255, 255, 255), orientation: str="", font=arial_font):
-    if not font:
-        font = arial_font
-    img = text if isinstance(text, pygame.Surface) else font.render(str(text), True, text_color)
+    img = text if isinstance(text, pygame.Surface) else get_text_render(text, font, text_color)
     position = (x, y)
     if orientation != "":
         sw, sh = surface.get_size()
@@ -33,6 +33,8 @@ def draw_text(surface, text: pygame.Surface | str, x, y, text_color = (255, 255,
                 position = img.get_rect(center=(tw//2 + mw + x, sh//2 + y))
             case "right":
                 position = img.get_rect(center=(sw - tw - mw + x, sh//2 + y))
+            case "left_down":
+                position = img.get_rect(center=(tw // 2 + mw + x, sh - th + y))
     surface.blit(img, position)
 
 def is_empty(data):

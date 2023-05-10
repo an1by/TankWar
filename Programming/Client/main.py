@@ -69,6 +69,7 @@ def main():
     """
     Основной рабочий класс
     """
+    background_color = (120, 120, 120)
     game_status = "menu" # menu / game / settings / server_select
     # global servers_buttons
     current_step = None # True: step / False: waiting / None: waiting in game start
@@ -104,7 +105,7 @@ def main():
         else:
             if connection.connected:
                 for received in connection.receive():
-                    if received and received["action"]:
+                    if received and "action" in received:
                         match (received['action']):
                             case "step_feedback":
                                 match received['step']:
@@ -160,6 +161,7 @@ def main():
                         case pygame.K_e:
                             if tanks.active_tank and current_choose == "move" or current_choose == "fire":
                                 current_choose = "move" if current_choose == "fire" else "fire"
+                                game_buttons["fire"].switch()
                         case pygame.K_ESCAPE:
                             if tanks.active_tank and current_step:
                                 tanks.active_tank = None
@@ -216,7 +218,7 @@ def main():
         match (game_status):
             case "game":
                 # Фон\
-                screen.fill((108, 108, 108))
+                screen.fill(background_color)
                 if game_winner:
                     utils.draw_text(screen, f'Выиграла команда {"Зеленых" if game_winner == "red" else "Желтых"}', 0, 0, orientation="center", font=calibri_font)
                     connection.stop()
@@ -244,11 +246,16 @@ def main():
                         utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
 
                         if current_step == True and tanks.active_tank and not pause:
+                            if game_buttons["skip"].draw(screen):
+                                connection.send({
+                                    "command": "step",
+                                    "what": "skip"
+                                })
                             match current_choose:
                                 case "move" | "fire":
-                                    if game_buttons["fire_move"].draw(screen):
+                                    if game_buttons["fire"].draw(screen):
                                         current_choose = "move" if current_choose == "fire" else "fire"
-                                        game_buttons["fire_move"].switch()
+                                        game_buttons["fire"].switch()
                                 case "rotate":
                                     for key in game_buttons["moving"].keys():
                                         if game_buttons["moving"][key].draw(screen):
@@ -287,11 +294,18 @@ def main():
 
             case "menu":
                 screen.blit(main_canvas, (0, 0))
-                main_canvas.fill((37, 250, 73))
                 main_canvas.blit(menu_canvas, (0, 0))
-                menu_canvas.fill((100, 100, 100))
+                menu_canvas.fill(background_color)
 
-                utils.draw_text(menu_canvas, "Танковый бой", screen_size[0], cells["size"]*1.5)
+                pr_tankwar = utils.get_text_render("Танковый Бой", calibri_font)
+                utils.draw_text(menu_canvas, pr_tankwar, cells["size"] * -0.5, cells["size"] * 1.2, orientation="up")
+
+                tg = pygame.transform.scale(tanks.green_tank["alive"], (72, 72))
+                ty = pygame.transform.scale(tanks.yellow_tank["alive"], (72, 72))
+
+                utils.draw_text(menu_canvas, tg, (pr_tankwar.get_width() + tg.get_width() + cells["size"]) * -0.5, cells["size"] * 1.2, orientation="up")
+                utils.draw_text(menu_canvas, ty, (pr_tankwar.get_width() + tg.get_width() - cells["size"]) * 0.5, cells["size"] * 1.2, orientation="up")
+
                 if menu_buttons["play"].draw(menu_canvas):
                     game_status = "server_select"
                 if menu_buttons["settings"].draw(menu_canvas):
@@ -301,18 +315,16 @@ def main():
 
             case "authors":
                 screen.blit(main_canvas, (0, 0))
-                main_canvas.fill((37, 250, 73))
                 main_canvas.blit(authors_canvas, (0, 0))
-                authors_canvas.fill((100, 100, 100))
+                authors_canvas.fill(background_color)
                 if credits.draw(authors_canvas):
                     game_status = "menu"
 
             case "settings":
                 # settings_buttons
                 screen.blit(main_canvas, (0, 0))
-                main_canvas.fill((37, 250, 73))
                 main_canvas.blit(settings_canvas, (0, 0))
-                settings_canvas.fill((100, 100, 100))
+                settings_canvas.fill(background_color)
 
                 for key in settings_buttons.keys():
                     if settings_buttons[key].draw(settings_canvas):
@@ -321,7 +333,7 @@ def main():
 
             case "server_select":
                 screen.blit(main_canvas, (0, 0))
-                main_canvas.fill((37, 250, 73))
+                main_canvas.fill(background_color)
                 sb_w = razdiscell[0]
                 sb_h = razdiscell[1]
                 main_canvas.blit(server_select_canvas, (sb_w, sb_h))
@@ -346,8 +358,8 @@ def main():
                             not_available["text"] = server_button.server["not_available"]
                 # if settings_button.draw(main_canvas):
                 #     game_status = "game"
-            case "settings":
-                pass
+
+        utils.draw_text(screen, "© Краснодарское ПКУ (2023)", -15, 0, orientation="left_down", font=medium_arial_font)
 
         if up_buttons["exit"].draw(screen):
             pygame.quit()
