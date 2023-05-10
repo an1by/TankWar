@@ -312,7 +312,7 @@ const server = net.createServer(async (socket) => {
                 }
             }
         } catch (e) {
-            Logger.error('Ошибка выполнения кода: ' + e.message)
+            Logger.error(`Ошибка выполнения кода со стороны ${address}: ${e.message}`)
             Logger.error(e)
         }
     });

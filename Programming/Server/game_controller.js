@@ -99,13 +99,11 @@ function change_step(step) {
 }
 
 function send_time(change_step=false) {
-    if (getWithType("client").length !== 2) {
-        step_timer = -10
-        return
-    }
     if (change_step)
         step_timer = 30
+    let counter = 0
     for (const client of getWithType("client")) {
+        counter += 1
         if (change_step) {
             switch (client.step) {
                 case true:
@@ -118,6 +116,10 @@ function send_time(change_step=false) {
             "time": step_timer,
             "step": client.step
         })
+    }
+    if (counter !== 2) {
+        step_timer = -10
+        return
     }
 }
 
