@@ -245,52 +245,53 @@ def main():
                         pygame.draw.circle(screen, current_color, display_pos, 130, 30)
                         utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
 
-                        if current_step == True and tanks.active_tank and not pause:
+                        if current_step == True:
                             if game_buttons["skip"].draw(screen):
                                 connection.send({
                                     "command": "step",
                                     "what": "skip"
                                 })
-                            match current_choose:
-                                case "move" | "fire":
-                                    if game_buttons["fire"].draw(screen):
-                                        current_choose = "move" if current_choose == "fire" else "fire"
-                                        game_buttons["fire"].switch()
-                                case "rotate":
-                                    for key in game_buttons["moving"].keys():
-                                        if game_buttons["moving"][key].draw(screen):
-                                            angle = 0
-                                            match (key):
-                                                case "up":
-                                                    angle = 90
-                                                case "right":
-                                                    angle = 360
-                                                case "down":
-                                                    angle = 270
-                                                case "left":
-                                                    angle = 180
-                                            if temp_position != None:
-                                                temp_position.angle = angle
-                                                tanks.active_tank.move_and_send(temp_position)
-                                                temp_position = None
-                                                tanks.active_tank = None
-                                                current_step = False
-                                case "move":
-                                    for key in game_buttons["moving"].keys():
-                                        if game_buttons["moving"][key].draw(screen):
-                                            position = tanks.active_tank.position
-                                            match (key):
-                                                case "up":
-                                                    position.y += -1
-                                                case "right":
-                                                    position.x += 1
-                                                case "down":
-                                                    position.y += 1
-                                                case "left":
-                                                    position.x += -1
-                                            if tanks.active_tank.can_move(position) and temp_position == None:
-                                                temp_position = position
-                                                current_choose = "rotate"
+                            if tanks.active_tank and not pause:
+                                match current_choose:
+                                    case "move" | "fire":
+                                        if game_buttons["fire"].draw(screen):
+                                            current_choose = "move" if current_choose == "fire" else "fire"
+                                            game_buttons["fire"].switch()
+                                    case "rotate":
+                                        for key in game_buttons["moving"].keys():
+                                            if game_buttons["moving"][key].draw(screen):
+                                                angle = 0
+                                                match (key):
+                                                    case "up":
+                                                        angle = 90
+                                                    case "right":
+                                                        angle = 360
+                                                    case "down":
+                                                        angle = 270
+                                                    case "left":
+                                                        angle = 180
+                                                if temp_position != None:
+                                                    temp_position.angle = angle
+                                                    tanks.active_tank.move_and_send(temp_position)
+                                                    temp_position = None
+                                                    tanks.active_tank = None
+                                                    current_step = False
+                                    case "move":
+                                        for key in game_buttons["moving"].keys():
+                                            if game_buttons["moving"][key].draw(screen):
+                                                position = tanks.active_tank.position
+                                                match (key):
+                                                    case "up":
+                                                        position.y += -1
+                                                    case "right":
+                                                        position.x += 1
+                                                    case "down":
+                                                        position.y += 1
+                                                    case "left":
+                                                        position.x += -1
+                                                if tanks.active_tank.can_move(position) and temp_position == None:
+                                                    temp_position = position
+                                                    current_choose = "rotate"
 
             case "menu":
                 screen.blit(main_canvas, (0, 0))
