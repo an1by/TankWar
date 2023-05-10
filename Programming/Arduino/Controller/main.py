@@ -7,7 +7,7 @@ import re
 
 
 # настройка соединения с дуней (Ардуино)
-uart = serial.Serial('/dev/ttyUSB0', 115200)
+uart = serial.Serial('/dev/ttyUSB0', 115200) # Менять COM порт тут
 time.sleep(1) #give the connection a second to settle
 
 # Подключение к серверу
@@ -24,13 +24,20 @@ def uart_write(command: str) -> None:
 uart_status: str = ""
 uart_status_last = ""
 
-coordinate = {}
+coordinate = {"x": -1, "y": -1, "angle": 560}
+coordinate_last = {"x": 0, "y": 0, "angle": 0}
+isMoved = False
+
+
+isFire = False
 
 def uart_read() -> None:
     """
     Принимает ответы с дуни, если состояние то меняет глобально
     """
+    if uart.in_waiting <= 0: return 
     data = str(uart.readline())[2:-5]
+    
     if data:
         
         # Если статус, то меняет его в глобале
@@ -41,12 +48,23 @@ def uart_read() -> None:
             if uart_status_last != uart_status:
                 file.write(data + "\n")
                 uart_status_last = uart_status
+            
+            # print(data)
 
-            global coordinate
+            global coordinate, coordinate_last, isMoved
             row = row[1][5:].split(',')
             coordinate['x'] = float(row[0])
             coordinate['y'] = float(row[1])
             coordinate['angle'] = float(row[2])
+
+            print(coordinate_last == coordinate, coordinate_last, coordinate)
+            if coordinate_last != coordinate:
+                print("isMoved = True")
+                coordinate_last['x'] = coordinate['x']
+                coordinate_last['y'] = coordinate['y']
+                coordinate_last['angle'] = coordinate['angle']
+
+                isMoved = True
             # file.write(coordinate)
         else:
             if data == "ok":
@@ -79,15 +97,16 @@ uart_read()
 ctrl_magnet(False)
 
 command_to_last = {}
-is_sended = True
+is_sended = False
+
+uart_write("?") # опрос состояния
 
 # Основной цикл
 while True:
     uart_write("?") # опрос состояния
-    
+
     # Принимаем с дуни и в лог
     uart_read()
-
     # if not (uart_status in ["Idle", "Run"]):
         
 
@@ -98,24 +117,28 @@ while True:
 
     # Принимаем команды от сервака
     for recived in tcpip.get_data():
-        recived = {
-            "action": "tank_move", 
-            "from":{
-                "x": 5,
-                "y": 6,
-                "angle": 180
-            },
-            "to":{
-                "x": 6,
-                "y": 6,
-                "angle": 180
-            }
-        }
+        # #Example json
+        # recived = {
+        #     "action": "tank_move", 
+        #     "from":{
+        #         "x": 5,
+        #         "y": 6,
+        #         "angle": 180
+        #     },
+        #     "to":{
+        #         "x": 6,
+        #         "y": 6,
+        #         "angle": 180
+        #     }
+        # }
         if recived:
             print(recived)
-            if recived['action'] == 'log_console':
-                continue
             file.write(str(recived) + "\n")
+            if 'action' in recived and recived['action'] == 'log_console':
+                continue
+            if not('to' in recived and 'from' in recived):
+                continue
+            
             
             is_sended = False
             # json -> G-сode команды
@@ -141,13 +164,18 @@ while True:
             command["to_angle"] = gcode.rotate(
                 short_angle(recived['to']['angle']) * config.MULL_ANGLE
             )
+            isFire =  recived['from']['x'] == recived['to']['x'] and recived["from"]["y"] == recived["to"]["y"]
 
     if command:
         def exe_command(com, extra = ""):
+            global command
+            uart_write("?") # опрос состояния
             uart_write(command[com] + extra)
+            uart_write("?") # опрос состояния
             del command[com]
         
         exe_command('from', config.F(100))
+        
         exe_command('from_angle', config.F(20))
         
         ctrl_magnet(True)
@@ -161,12 +189,16 @@ while True:
 
         ctrl_magnet(False)
     
-    print(command_to_last, coordinate)
-    if not(is_sended) and command_to_last == coordinate:
+
+    print(coordinate_last, coordinate, "\t\t", isMoved, is_sended)
+    if (not(is_sended)) and isMoved:
+        isMoved = False
+    # (command_to_last['x'] * config.MULL == coordinate['x']) and (command_to_last['y'] * config.MULL == coordinate['y']) and (command_to_last['angle'] * config.MULL_ANGLE == coordinate['angle']):
         is_sended = True
-        tcpip.send_data({"command": "ready_move"})
-        file.write("ready_move")
-        print("ready_move")
+        what = "final_fire" if isFire else "final_move"
+        tcpip.send_data({"command": "step", "what": what})
+        file.write(what + "\n")
+        print(what + "\n")
         #TODO: отправка готовности серваку
 
 

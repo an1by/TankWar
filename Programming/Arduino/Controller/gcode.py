@@ -18,7 +18,7 @@ def angle(x, y):
     """
     b = math.sqrt(x**2 + y**2)
     c = math.sqrt((x-1)**2 + y**2)
-    if c != 0:
+    if b != 0 and c != 0:
         alpha = math.acos((b**2 + c**2 - 1)/(2*b*c))
     else:
         alpha = 0 if x >= 0 else 180
