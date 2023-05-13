@@ -111,7 +111,7 @@ const server = net.createServer(async (socket) => {
                                 new_tank = new Tank(number, team, (client && client.type == "manager" ? undefined : socket))
                                 Logger.success(`Новый танк №${number} команды ${team} инициализирован.`)
                             }
-                            if ("move" in data) {
+                            if ("move" in data && "x" in data["move"] && "y" in data["move"]) {
                                 position = {
                                     x: data["move"]["x"],
                                     y: data["move"]["y"]

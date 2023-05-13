@@ -154,25 +154,13 @@ def mainMenu():
                                         if tank:
                                             tanks.active_tank = tank
                                         else:
-                                            count = 0
-                                            for t in tanks.tank_list:
-                                                if t.team == "red":
-                                                    count += 1
-                                            tank = tanks.Tank("red", count, False)
-                                            tank.add()
-                                            sleep(500)
-                                            tank.move(coords)
+                                            tank = tanks.Tank("red")
+                                            tank.add(coords.to_json())
                                             tanks.active_tank = tank
                                     case 3: # ПКМ
                                         if not tank:
-                                            count = 0
-                                            for t in tanks.tank_list:
-                                                if t.team == "blue":
-                                                    count += 1
-                                            tank = tanks.Tank("blue", count, False)
-                                            tank.add()
-                                            sleep(500)
-                                            tank.move(coords)
+                                            tank = tanks.Tank("blue")
+                                            tank.add(coords.to_json())
                                             tanks.active_tank = tank
                 case pygame.KEYDOWN:
                     match event.key:

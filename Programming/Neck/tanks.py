@@ -28,12 +28,19 @@ class Tank(object):
     """
     Класс танка
     """
-    def __init__(self, team: str, number: int, dead: bool):
+    def __init__(self, team: str, number: int = None, dead = False):
         """
         Инициализация танков
         """
         self.team = team
-        self.number = number
+        if number:
+            self.number = number
+        else:
+            count = 0
+            for t in tank_list:
+                if t.team == team:
+                    count += 1
+            self.number = count
         self.dead = dead
 
         self.original_image =  (green_tank if team == "red" else yellow_tank)["alive"]
@@ -87,12 +94,13 @@ class Tank(object):
         """
         surface.blit(self.image, (self.position.x  * cells["size"], self.position.y * cells["size"]))
     
-    def add(self):
+    def add(self, move = {}):
         connection.send({
             "command": "init",
             "who": "tank",
             "number": self.number,
-            "team": self.team
+            "team": self.team,
+            "move": move
         })
 
     def delete(self):
