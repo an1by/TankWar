@@ -5,7 +5,7 @@ const {getAngle, sleep} = require("./utils")
 let tank_list = []
 
 class Tank {
-    constructor(number, team, socket) {
+    constructor(number, team, socket = undefined) {
         this.client = new Client(socket, "tank")
         this.team = team
         this.number = number
@@ -34,20 +34,19 @@ class Tank {
         tank_list.push(this)
         return this;
     }
-    pre_move(position) {
-        if (position.x < 0 || position.y < 0)
-            return false
+    pre_move(position, to_controller = true) {
         this.temp_move = {
             x: position["x"],
             y: position["y"],
             angle: position["angle"]
         }
-        this.client.broadcast_data("controller", {
-            "action": "move_tank",
-            "from": this.position,
-            "to": this.temp_move
-        })
-        return true
+        if (to_controller)
+            return this.client.broadcast_data("controller", {
+                "action": "move_tank",
+                "from": this.position,
+                "to": this.temp_move
+            })
+        return false
     }
     move() {
         if (this.temp_move.x !== -1) {
@@ -60,6 +59,21 @@ class Tank {
             return `(X: ${this.position.x} | Y: ${this.position.y} | Угол: ${this.position.angle})`;
         }
         return undefined;
+    }
+    move_send(to_manager = false) {
+        this.client.broadcast_data("client", {
+            "action": "move_tank",
+            "team": this.team,
+            "number": this.number,
+            "position": this.position
+        })
+        if (to_manager)
+            this.client.broadcast_data("manager", { //MANAGER
+                "action": "move_tank",
+                "team": this.team,
+                "number": this.number,
+                "position": this.position
+            })
     }
     disconnect() {
         if (this.client)

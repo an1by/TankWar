@@ -26,14 +26,21 @@ class Client {
         }
     }
     send_data(data) {
-        if (this.socket)
+        if (this.socket) {
             this.socket.write(JSON.stringify(data), 'utf-8');
+            return true
+        }
+        return false
     }
     broadcast_data(who, data) {
+        let k = 0
         for (let client of getWithType(who)) {
-            if (client.socket)
+            if (client.socket) {
+                k += 1
                 client.send_data(data)
+            }
         }
+        return k > 0
     }
 }
 
