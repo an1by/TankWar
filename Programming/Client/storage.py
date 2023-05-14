@@ -19,7 +19,7 @@ medium_arial_font = pygame.font.SysFont('arial', 24)
 
 servers = [
     {
-        "name": "Aniby.NET",
+        "name": "Aniby.RU",
         "address": "play.aniby.net",
         "port": 3030
     },

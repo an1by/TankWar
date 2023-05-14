@@ -3,15 +3,12 @@ from storage import screen_size
 from utils import draw_text, get_text_render, arial_font
 
 lvg = "Лукьянов Владислав Геннадьевич"
-pav = "Павлиди Дмитрий (aniby.net)"
+pav = "Павлиди Дмитрий (Aniby.RU)"
 kot = "Котов Евгений"
 den = "Родионов Даниил"
 egor = "Литвинов Егор"
 shev = "Никита Шевцов"
 titres = [
-    ["ДЛЯ ВАС СТАРАЛАСЬ", ["Команда Краснодарского ПКУ"]],
-    ["", ""],
-
     ["Руководитель проекта", lvg],
 
     ["Программа клиента", pav],
@@ -22,7 +19,8 @@ titres = [
     ["Механическое поле", [kot, egor, den, shev]],
     ["Управление танками на поле", [kot, pav, egor, den]],
 
-    ["Распознавание объектов", [egor, pav]]
+    ["Распознавание объектов", [egor, pav]],
+    ["Искусственный интелект", [egor, pav, den]]
 ]
 
 ud_arial = pygame.font.SysFont('arial', 36)

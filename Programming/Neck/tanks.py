@@ -69,7 +69,7 @@ class Tank(object):
         elif position.angle > 360:
             position.angle = 90
 
-        self.position = position
+        self.set_position(position)
 
         connection.send({
             "command": "step",
