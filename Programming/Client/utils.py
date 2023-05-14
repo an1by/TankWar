@@ -24,7 +24,7 @@ def draw_text(surface, text: pygame.Surface | str, x, y, text_color = (255, 255,
         mw, mh = 30, th * 0.08
         match orientation:
             case "up":
-                position = img.get_rect(center=(sw//2 + mw + x, mh + y))
+                position = img.get_rect(center=(sw//2 + x, th // 2 + mh + y))
             case "down":
                 position = img.get_rect(center=(sw//2 + mw + x, sh-th + mh + y))
             case "center":

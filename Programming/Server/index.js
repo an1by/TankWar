@@ -49,6 +49,10 @@ const server = net.createServer(async (socket) => {
                         case "obstacles":
                             obstacles_list = []
                             break
+                        case "tanks":
+                            tank_list.forEach(tank => tank.disconnect())
+                            tank_list = []
+                            break
                         case "tank":
                             const number = data["number"],
                                 team = data["team"]
@@ -111,10 +115,11 @@ const server = net.createServer(async (socket) => {
                             new_tank = new Tank(number, team)
                             Logger.success(`Новый танк №${number} команды ${team} инициализирован.`)
 
-                            if ("move" in data && "x" in data["move"] && "y" in data["move"]) {
+                            if ("move" in data && "x" in data["move"] && "y" in data["move"] && "angle" in data["move"]) {
                                 position = {
                                     x: data["move"]["x"],
-                                    y: data["move"]["y"]
+                                    y: data["move"]["y"],
+                                    angle: data["move"]["angle"]
                                 }
                                 new_tank.pre_move(position, false)
                                 new_tank.move()

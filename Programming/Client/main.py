@@ -25,6 +25,7 @@ import utils
 import tanks
 import obstacles
 from credits import Credits
+from hints import draw_hint
 credits = Credits()
 
 ### Настраиваем пути текстур ###
@@ -167,13 +168,13 @@ def main():
                                 tanks.active_tank = None
                                 temp_position = None
                                 current_choose = ""
-                        case pygame.K_d:
+                        case pygame.K_d | pygame.K_RIGHT:
                             angle = 360
-                        case pygame.K_w:
+                        case pygame.K_w | pygame.K_UP:
                             angle = 90
-                        case pygame.K_a:
+                        case pygame.K_a | pygame.K_LEFT:
                             angle = 180
-                        case pygame.K_s:
+                        case pygame.K_s | pygame.K_DOWN:
                             angle = 270
                     if angle >= 0 and current_choose == "rotate" and temp_position != None:
                         temp_position.angle = angle
@@ -185,7 +186,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and game_status == "game" and current_step == True and not pause:
                     margin_w = razdiscell[0]
-                    margin_h = cells["size"] * 0.5
+                    margin_h = cells["size"] * 1.5
                     posX, posY = pygame.mouse.get_pos()
                     posX -= margin_w
                     posY -= margin_h
@@ -225,9 +226,23 @@ def main():
                 else:
                     # Размеры
                     sb_w = razdiscell[0]
-                    sb_h = cells["size"] * 0.5
+                    sb_h = cells["size"] * 1.5
                     # Обводка
-                    pygame.draw.rect(screen, (65, 65, 65), (sb_w - 20, sb_h - 20, sb_w + all_cells_size//2.29 , sb_h + all_cells_size * 0.988))
+                    backgameimage = pygame.Surface((all_cells_size + cells["size"] * 0.5, all_cells_size + cells["size"] * 0.5))
+                    backgameimage.fill((65, 65, 65))
+
+                    # Отрисовка обозначений
+                    utils.draw_text(screen, backgameimage, 0, -cells["size"] * 0.95 + sb_h, orientation = "up")
+                    for index, word in enumerate('АБВГДЕЖЗ'):
+                        rendered = utils.get_text_render(word)
+                        utils.draw_text(screen, rendered, (rendered.get_width() + cells["size"] * 0.8) // 2 + (cells["size"] * (index - 4)), sb_h - cells["size"] * 0.8, orientation="up")
+                    for index in range(8):
+                        rendered = utils.get_text_render(index + 1)
+                        utils.draw_text(screen, rendered, (rendered.get_width() + cells["size"] * 0.8) // 2 + (cells["size"] * - 5), sb_h + cells["size"] * (index + 0.2), orientation="up")
+                    
+                    # Отрисовка подсказок
+                    draw_hint(screen, current_choose, current_step)
+
                     # Применение игрового канваса
                     screen.blit(game_canvas, (sb_w, sb_h))
                     # Отрисовка квадратов
@@ -299,13 +314,13 @@ def main():
                 menu_canvas.fill(background_color)
 
                 pr_tankwar = utils.get_text_render("Танковый Бой", calibri_font)
-                utils.draw_text(menu_canvas, pr_tankwar, cells["size"] * -0.5, cells["size"] * 1.2, orientation="up")
+                utils.draw_text(menu_canvas, pr_tankwar, 0, cells["size"] * 0.6, orientation="up")
 
                 tg = pygame.transform.scale(tanks.green_tank["alive"], (72, 72))
                 ty = pygame.transform.scale(tanks.yellow_tank["alive"], (72, 72))
 
-                utils.draw_text(menu_canvas, tg, (pr_tankwar.get_width() + tg.get_width() + cells["size"]) * -0.5, cells["size"] * 1.2, orientation="up")
-                utils.draw_text(menu_canvas, ty, (pr_tankwar.get_width() + tg.get_width() - cells["size"]) * 0.5, cells["size"] * 1.2, orientation="up")
+                utils.draw_text(menu_canvas, tg, (pr_tankwar.get_width() + tg.get_width()) * -0.5, cells["size"] * 0.6, orientation="up")
+                utils.draw_text(menu_canvas, ty, (pr_tankwar.get_width() + tg.get_width()) * 0.5, cells["size"] * 0.6, orientation="up")
 
                 if menu_buttons["play"].draw(menu_canvas):
                     game_status = "server_select"

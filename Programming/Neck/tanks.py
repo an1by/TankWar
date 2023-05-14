@@ -133,6 +133,16 @@ def foundTank(x: int, y: int) -> (Tank | None):
             return tank
     return None
 
+
+def getByNumber(team: str, number: int) -> (Tank | None):
+    """
+    Ищет танк по номеру и команде
+    """
+    for tank in tank_list:
+        if tank.number == number and tank.team == team:
+            return tank
+    return None
+
 active_tank: Tank = None
 """
 Активный выбранный танк
