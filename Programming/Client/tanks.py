@@ -119,6 +119,8 @@ class Tank(object):
         for tank in tank_list:
             if tank.position.x == position.x and tank.position.y == position.y:
                 return False
+            elif tank == self and self.position == position:
+                return True
         return True
     
     def get_ranges(self):

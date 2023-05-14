@@ -25,7 +25,7 @@ import utils
 import tanks
 import obstacles
 from credits import Credits
-from hints import draw_hint
+from hints import *
 credits = Credits()
 
 ### Настраиваем пути текстур ###
@@ -89,8 +89,8 @@ def main():
     received = None
 
     colors = {
-        "me": (97, 65, 67),
-        "enemy": (52, 69, 76)
+        "me": (101, 171, 59),
+        "enemy": (195, 177, 60)
     }
 
     temp_position = None
@@ -113,7 +113,11 @@ def main():
                                     case "none":
                                         current_step = None
                                     case _:
-                                        current_step = received["step"]
+                                        if current_step != received["step"]:
+                                            temp_position = None
+                                            tanks.active_tank = None
+                                            current_choose = ""
+                                            current_step = received["step"]
                                 if not current_step:
                                     current_choose = ""
                                 step_time = received['time']
@@ -192,6 +196,7 @@ def main():
                     posY -= margin_h
                     if 0 <= posX < cells["size"] * cells["amount"] and 0 <= posY < cells["size"] * cells["amount"]:
                         position = CoordinatesObject(int(posX // cells["size"]), int(posY // cells["size"])) # 0, 1, 2, 3, 4, 5, 6, 7
+                        print(position.to_json())
                         founded_tank = tanks.foundTank(position)
                         if tanks.active_tank:
                             match (current_choose):
@@ -210,6 +215,7 @@ def main():
                         if founded_tank and founded_tank.team == team and not founded_tank.dead and current_step:
                             tanks.active_tank = founded_tank
                             current_choose = "move"
+                            temp_position = None
                         elif current_step and temp_position and current_choose == "rotate":
                             pass
                         else:
@@ -234,12 +240,7 @@ def main():
 
                     # Отрисовка обозначений
                     utils.draw_text(screen, backgameimage, 0, -cells["size"] * 0.95 + sb_h, orientation = "up")
-                    for index, word in enumerate('АБВГДЕЖЗ'):
-                        rendered = utils.get_text_render(word)
-                        utils.draw_text(screen, rendered, (rendered.get_width() + cells["size"] * 0.8) // 2 + (cells["size"] * (index - 4)), sb_h - cells["size"] * 0.8, orientation="up")
-                    for index in range(8):
-                        rendered = utils.get_text_render(index + 1)
-                        utils.draw_text(screen, rendered, (rendered.get_width() + cells["size"] * 0.8) // 2 + (cells["size"] * - 5), sb_h + cells["size"] * (index + 0.2), orientation="up")
+                    draw_words(screen, sb_h)
                     
                     # Отрисовка подсказок
                     draw_hint(screen, current_choose, current_step)
@@ -257,17 +258,19 @@ def main():
 
                     if current_step != None:
                         display_pos = (screen_size[0] * 0.89, screen_size[1] * 0.83)
-                        current_color = colors["me"] if current_step == True else colors["enemy"]
-                        pygame.draw.circle(screen, current_color, display_pos, 130, 30)
-                        utils.draw_text(screen, str(step_time) + "c" , display_pos[0], display_pos[1], text_color=current_color)
+                        circle_size = 130
+                        pygame.draw.circle(screen, (colors["me"] if current_step == True else colors["enemy"]), display_pos, circle_size)
+                        st_rendered = utils.get_text_render(step_time, font=calibri_font)
+                        utils.draw_text(screen, st_rendered, display_pos[0] - st_rendered.get_width() // 2, display_pos[1] - st_rendered.get_height() // 2)
 
-                        if current_step == True:
+                        if current_step == True and not pause:
                             if game_buttons["skip"].draw(screen):
                                 connection.send({
                                     "command": "step",
                                     "what": "skip"
                                 })
-                            if tanks.active_tank and not pause:
+                            if tanks.active_tank:
+                                draw_current_tank(screen)
                                 match current_choose:
                                     case "move" | "fire":
                                         if game_buttons["fire"].draw(screen):
