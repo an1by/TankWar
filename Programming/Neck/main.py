@@ -60,6 +60,22 @@ def fill_field():
                 get_box(x, y, "empty")
             )
 
+# def set_obstacles(obstacles):
+#     fill_field()
+#     for obstacle in obstacles:
+#         x = x * cells["size"]
+#         y = y * cells["size"]
+#         for sprite in allSprites:
+#             if sprite.rect.x == x and sprite.rect.y == y:
+#                 new_sprite = get_box(x, y,
+#                     "full" if sprite.custom_type == "empty" else 
+#                     (
+#                         "river" if sprite.custom_type == "river" else 
+#                         "empty"
+#                     )
+#                 )
+#                 sprite.custom_type, sprite.image = new_sprite.custom_type, new_sprite.image
+
 fill_field()
 
 def mainMenu():
@@ -77,6 +93,8 @@ def mainMenu():
                 for received in connection.receive():
                     if received and received["action"]:
                         match (received['action']):
+                            # case "set_obstacles":
+                            #     set_obstacles(received["obstacles"])
                             case "set_tanks":
                                 tanks.setList(received["tanks"])
                             case "fire_feedback":
@@ -154,14 +172,10 @@ def mainMenu():
                                         if tank:
                                             tanks.active_tank = tank
                                         else:
-                                            tank = tanks.Tank("red")
-                                            tank.add(coords.to_json())
-                                            tanks.active_tank = tank
+                                            tanks.Tank("red").add(coords.to_json())
                                     case 3: # ПКМ
                                         if not tank:
-                                            tank = tanks.Tank("blue")
-                                            tank.add(coords.to_json())
-                                            tanks.active_tank = tank
+                                            tanks.Tank("blue").add(coords.to_json())
                 case pygame.KEYDOWN:
                     match event.key:
                         case pygame.K_ESCAPE:
