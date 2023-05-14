@@ -181,7 +181,7 @@ def main():
                         tanks.active_tank.move_and_send(temp_position)
                         temp_position = None
                         tanks.active_tank = None
-                        current_step = False
+                        # current_step = False
                     angle = -1
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and game_status == "game" and current_step == True and not pause:
@@ -201,7 +201,8 @@ def main():
                                         current_choose = "rotate"
                                 case "fire":
                                     if tanks.active_tank.fire_and_send(position):
-                                        current_step = False
+                                        pass
+                                        # current_step = False
                                 case "rotate":
                                     pass
                                 case _:
@@ -290,7 +291,7 @@ def main():
                                                     tanks.active_tank.move_and_send(temp_position)
                                                     temp_position = None
                                                     tanks.active_tank = None
-                                                    current_step = False
+                                                    # current_step = False
                                     case "move":
                                         for key in game_buttons["moving"].keys():
                                             if game_buttons["moving"][key].draw(screen):
