@@ -31,6 +31,8 @@ class Tank {
             angle: 0
         }
         this.dead = false
+        if (!socket)
+            this.client.address = `tank_${team}_${number}`
         tank_list.push(this)
         return this;
     }
@@ -76,8 +78,7 @@ class Tank {
             })
     }
     disconnect() {
-        if (this.client)
-            this.client.disconnect();
+        this.client.disconnect();
         for (let i = 0; i < tank_list.length; i++) {
             let tank = tank_list[i]
             if (tank && tank.team === this.team && tank.number === this.number) {
