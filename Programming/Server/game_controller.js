@@ -42,8 +42,10 @@ function send_field_setup(who) {
 }
 
 function end_game(winner=undefined) {
-    tank_list = []
-    obstacles_list = []
+    while (obstacles_list.length > 0)
+        obstacles_list.pop();
+    while (tank_list.length > 0)
+        tank_list.pop();
     client_list.forEach(client => {
         if (client.type !== "manager" && client.type !== "controller")
             client.disconnect()
